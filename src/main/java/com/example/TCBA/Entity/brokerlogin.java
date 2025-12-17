@@ -1,4 +1,4 @@
-package com.example.TCBA.entity;
+package com.example.TCBA.Entity;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,4 +12,5 @@ public class brokerlogin {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    private String name;
 }
