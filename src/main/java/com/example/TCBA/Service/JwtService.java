@@ -13,7 +13,7 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret}")
+    @Value("${jwt.secret:tcba_default_secret_key_1234567890123456}")
     private String secret;
 
     @Value("${jwt.expiration}")
