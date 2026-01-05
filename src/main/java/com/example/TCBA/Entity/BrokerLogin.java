@@ -22,6 +22,9 @@ public class BrokerLogin {
     @Column(name = "stack_holder_id", length = 100)
     private String stackHolderId;
 
+    @Column(name = "wallet_id", unique = true)
+    private String walletId;
+
     @Column(name = "stack_holder_company_name", length = 150)
     private String stackHolderCompanyName;
 

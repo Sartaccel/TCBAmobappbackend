@@ -31,7 +31,8 @@ public class BrokerLoginService {
 
         return new LoginResponse(
                 token,
-                broker.getStackHolderId()
+                broker.getStackHolderId(),
+                broker.getWalletId()
         );
     }
 }
