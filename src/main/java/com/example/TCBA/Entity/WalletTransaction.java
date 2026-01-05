@@ -11,11 +11,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-        name = "wallet_transaction",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "razorpay_payment_id"),
-                @UniqueConstraint(columnNames = "transaction_id")
+@Table(name = "wallet_transaction_mob"
+        ,uniqueConstraints = {@UniqueConstraint(columnNames = "razorpay_payment_id"),
+        @UniqueConstraint(columnNames = "transaction_id")
         }
 )
 @Data
