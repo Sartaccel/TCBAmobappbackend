@@ -25,8 +25,8 @@ public class BrokerLogin {
     @Column(name = "wallet_id", unique = true)
     private String walletId;
 
-    @Column(name = "stack_holder_company_name", length = 150)
-    private String stackHolderCompanyName;
+//    @Column(name = "stack_holder_company_name", length = 150)
+//    private String stackHolderCompanyName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -39,8 +39,8 @@ public class BrokerLogin {
     @Column(nullable = false)
     private String firstName;
 
-    @Column(name = "payment_setting_id")
-    private Long paymentSettingId;
+//    @Column(name = "payment_setting_id")
+//    private Long paymentSettingId;
 
     @Column(name = "last_name")
     private String lastName;
@@ -63,11 +63,20 @@ public class BrokerLogin {
     @Column(name = "gst_number", unique = true)
     private String gst;
 
-    @Column(name = "upi_id", unique = true)
-    private String upiId;
+//    @Column(name = "upi_id", unique = true)
+//    private String upiId;
+
+    @Column(name = "primary_upi_id", unique = true)
+    private String primaryUpiId;
 
     @Column(name = "is_active")
     private Boolean isActive = true;
+
+    @Column(name = "reset_otp")
+    private String resetOtp;
+
+    @Column(name = "otp_expiry")
+    private LocalDateTime otpExpiry;
 
     @CreationTimestamp
     @Column(updatable = false)
