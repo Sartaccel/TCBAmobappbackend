@@ -19,8 +19,6 @@ public class RazorpayConfig {
     public RazorpayClient razorpayClient() throws RazorpayException {
         return new RazorpayClient(keyId, keySecret);
     }
-
-    // 🔥 frontend ku public key venum
     public String getKeyId() {
         return keyId;
     }

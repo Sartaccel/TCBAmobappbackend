@@ -53,7 +53,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/wallet/**").authenticated() // 🔥 explicitly allow wallet with JWT
+                        .requestMatchers("/mpin/**").authenticated()
+                        .requestMatchers("/wallet/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(
