@@ -1,5 +1,8 @@
 package com.example.TCBA.Controller;
 
+import com.example.TCBA.Entity.BrokerLogin;
+import com.example.TCBA.Repository.BrokerLoginRepository;
+import com.example.TCBA.Request.ChangePasswordRequest;
 import com.example.TCBA.Response.ApiResponse;
 import com.example.TCBA.Response.StackHolderProfileResponse;
 import com.example.TCBA.Service.BrokerLoginService;
@@ -9,10 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/broker")
@@ -21,6 +24,7 @@ public class BrokerProfileController {
 
     private final BrokerLoginService service;
     private final CommonUtil commonUtil;
+    private final BrokerLoginRepository repository;
 
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse> getProfile() {
@@ -50,6 +54,41 @@ public class BrokerProfileController {
 
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
+                    .body(response);
+        }
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<ApiResponse> changePassword(
+            @AuthenticationPrincipal String email,
+            @RequestBody ChangePasswordRequest request) {
+
+        try {
+            // 🔹 username assumed as email
+            BrokerLogin user = repository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            System.out.println(user);
+            // 🔹 call your service
+            service.changePassword(user.getId(), request);
+
+            ApiResponse response = new ApiResponse(
+                    "SUCCESS",
+                    "Password changed successfully",
+                    HttpStatus.OK
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+
+            ApiResponse response = new ApiResponse(
+                    "FAILURE",
+                    e.getMessage(),
+                    HttpStatus.BAD_REQUEST
+            );
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
                     .body(response);
         }
     }

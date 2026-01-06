@@ -1,9 +1,8 @@
 package com.example.TCBA.Controller;
 
-import com.example.TCBA.Request.ForgotPasswordRequest;
-import com.example.TCBA.Request.LoginRequest;
-import com.example.TCBA.Request.ResetPasswordRequest;
-import com.example.TCBA.Request.VerifyOtpRequest;
+import com.example.TCBA.Entity.BrokerLogin;
+import com.example.TCBA.Repository.BrokerLoginRepository;
+import com.example.TCBA.Request.*;
 import com.example.TCBA.Response.ApiResponse;
 import com.example.TCBA.Response.LoginResponse;
 import com.example.TCBA.Service.BrokerLoginService;
@@ -146,6 +145,7 @@ public class AuthController {
                     .body(response);
         }
     }
+
 
 
 }
