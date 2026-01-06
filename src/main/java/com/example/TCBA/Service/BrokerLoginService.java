@@ -6,6 +6,7 @@ import com.example.TCBA.Repository.BrokerLoginRepository;
 import com.example.TCBA.Repository.MpinRepository;
 import com.example.TCBA.Repository.PaymentDetailsRepository;
 import com.example.TCBA.Repository.StackHolderContactRepository;
+import com.example.TCBA.Request.ChangePasswordRequest;
 import com.example.TCBA.Response.LoginResponse;
 import com.example.TCBA.Response.StackHolderProfileResponse;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,23 @@ public class BrokerLoginService {
                 hasMpin
 
         );
+    }
+
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+
+        BrokerLogin CHA = repository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), CHA.getPassword())) {
+            throw new RuntimeException("Old password is incorrect");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("New password and confirm password do not match");
+        }
+
+        CHA.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        repository.save(CHA);
     }
 
     public StackHolderProfileResponse getProfile(String email) {
@@ -92,30 +110,6 @@ public class BrokerLoginService {
                 .build();
     }
 
-
-//    public StackHolderProfileResponse getProfile(String email) {
-//
-//        BrokerLogin broker = repository.findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//
-//        PaymentDetails payment =
-//                paymentDetailsRepo.findTopByStackHolders(broker)
-//                        .orElse(null);
-//
-//        StackHolderContact contact =
-//                contactRepo.findTopByStackHolders(broker)
-//                        .orElse(null);
-//
-//        return new StackHolderProfileResponse(
-//                broker.getStackHolderId(),
-//                broker.getFirstName(),
-//                broker.getLastName(),
-//                broker.getGst(),
-//                broker.getLicense(),
-//                broker.getEmail(),
-//                broker.getPhoneNumber(),
-//        );
-//    }
 
 }
 
