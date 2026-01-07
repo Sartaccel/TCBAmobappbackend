@@ -22,33 +22,50 @@ public class AuthController {
     private final BrokerLoginService service;
     private final ForgotPasswordService forgotPasswordService;
     private final CommonUtil commonUtil;
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest request) {
 
-        try {
-            LoginResponse loginResponse =
-                    service.login(request.getEmail(), request.getPassword());
+        LoginResponse loginResponse =
+                service.login(request.getEmail(), request.getPassword());
 
-            ApiResponse response = new ApiResponse(
-                    "SUCCESS",
-                    commonUtil.getResponseMessage("resp.tcba.login.ok"),
-                    HttpStatus.OK
-            );
+        ApiResponse response = new ApiResponse(
+                "SUCCESS",
+                commonUtil.getResponseMessage("resp.tcba.login.ok"),
+                HttpStatus.OK
+        );
 
-            response.setData(loginResponse);
-            return ResponseEntity.ok(response);
-
-        } catch (RuntimeException e) {
-
-            ApiResponse response = new ApiResponse(
-                    "FAILURE",
-                    commonUtil.getResponseMessage("resp.tcba.login.fail"),
-                    HttpStatus.UNAUTHORIZED
-            );
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        }
+        response.setData(loginResponse);
+        return ResponseEntity.ok(response);
     }
+
+//    @PostMapping("/login")
+//    public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest request) {
+//
+//        try {
+//            LoginResponse loginResponse =
+//                    service.login(request.getEmail(), request.getPassword());
+//
+//            ApiResponse response = new ApiResponse(
+//                    "SUCCESS",
+//                    commonUtil.getResponseMessage("resp.tcba.login.ok"),
+//                    HttpStatus.OK
+//            );
+//
+//            response.setData(loginResponse);
+//            return ResponseEntity.ok(response);
+//
+//        } catch (RuntimeException e) {
+//
+//            ApiResponse response = new ApiResponse(
+//                    "FAILURE",
+//                    commonUtil.getResponseMessage("resp.tcba.login.fail"),
+//                    HttpStatus.UNAUTHORIZED
+//            );
+//
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+//        }
+//    }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse> forgotPassword(

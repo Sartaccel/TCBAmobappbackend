@@ -1,5 +1,7 @@
 package com.example.TCBA.Controller;
 
+import com.example.TCBA.Exception.AppException;
+import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Request.ChangeMpinRequest;
 import com.example.TCBA.Request.SetMpinRequest;
 import com.example.TCBA.Request.VerifyMpinRequest;
@@ -85,9 +87,8 @@ public class MpinController {
         if (auth == null || !auth.isAuthenticated()
                 || auth instanceof AnonymousAuthenticationToken) {
 
-            throw new RuntimeException(
-                    commonUtil.getResponseMessage("resp.tcba.mpin.unauth")
-            );
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+
         }
 
         return auth.getName(); // email from JWT
