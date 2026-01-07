@@ -3,6 +3,8 @@ package com.example.TCBA.Service;
 import com.example.TCBA.Entity.BrokerLogin;
 import com.example.TCBA.Entity.Mpin;
 import com.example.TCBA.Entity.MpinResetOtp;
+import com.example.TCBA.Exception.AppException;
+import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Repository.BrokerLoginRepository;
 import com.example.TCBA.Repository.MpinRepository;
 import com.example.TCBA.Repository.MpinResetOtpRepository;
@@ -27,7 +29,7 @@ public class ForgotMpinService {
     public void sendOtp(String email) {
 
         brokerRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Email not registered"));
+                .orElseThrow(() -> new AppException(ErrorCode.BAD_REQUEST));
 
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
 
@@ -51,29 +53,49 @@ public class ForgotMpinService {
 
         MpinResetOtp resetOtp =
                 otpRepo.findTopByEmailAndUsedFalseOrderByIdDesc(email)
-                        .orElseThrow(() -> new RuntimeException("OTP not found"));
+                        .orElseThrow(() -> new AppException(ErrorCode.OTP_INVALID));
 
-        if (resetOtp.isUsed()
-                || resetOtp.getExpiryTime().isBefore(LocalDateTime.now())
-                || !resetOtp.getOtp().equals(otp)) {
-            throw new RuntimeException("Invalid or expired OTP");
+        if (resetOtp.getExpiryTime().isBefore(LocalDateTime.now())) {
+            throw new AppException(ErrorCode.OTP_EXPIRED);
+        }
+
+        if (!resetOtp.getOtp().equals(otp)) {
+            throw new AppException(ErrorCode.OTP_INVALID);
         }
 
         resetOtp.setUsed(true);
         otpRepo.save(resetOtp);
     }
+//    public void verifyOtp(String email, String otp) {
+//
+//        MpinResetOtp resetOtp =
+//                otpRepo.findTopByEmailAndUsedFalseOrderByIdDesc(email)
+//                        .orElseThrow(() -> new RuntimeException("OTP not found"));
+//
+//        if (resetOtp.isUsed()
+//                || resetOtp.getExpiryTime().isBefore(LocalDateTime.now())
+//                || !resetOtp.getOtp().equals(otp)) {
+//            throw new RuntimeException("Invalid or expired OTP");
+//        }
+//
+//        resetOtp.setUsed(true);
+//        otpRepo.save(resetOtp);
+//    }
 
     // 3️⃣ RESET MPIN
     public void resetMpin(String email, ResetMpinRequest req) {
 
-        if (!req.getNewMpin().equals(req.getConfirmMpin()))
-            throw new RuntimeException("MPIN mismatch");
+        if (!req.getNewMpin().equals(req.getConfirmMpin())) {
+            throw new AppException(ErrorCode.MPIN_MISMATCH);
+        }
 
         BrokerLogin user =
-                brokerRepo.findByEmail(email).orElseThrow();
+                brokerRepo.findByEmail(email)
+                        .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
 
         Mpin mpin =
-                mpinRepo.findByBroker(user).orElseThrow();
+                mpinRepo.findByBroker(user)
+                        .orElseThrow(() -> new AppException(ErrorCode.BAD_REQUEST));
 
         mpin.setMpinHash(encoder.encode(req.getNewMpin()));
         mpin.setAttempts(0);
@@ -81,4 +103,21 @@ public class ForgotMpinService {
 
         mpinRepo.save(mpin);
     }
+//    public void resetMpin(String email, ResetMpinRequest req) {
+//
+//        if (!req.getNewMpin().equals(req.getConfirmMpin()))
+//            throw new RuntimeException("MPIN mismatch");
+//
+//        BrokerLogin user =
+//                brokerRepo.findByEmail(email).orElseThrow();
+//
+//        Mpin mpin =
+//                mpinRepo.findByBroker(user).orElseThrow();
+//
+//        mpin.setMpinHash(encoder.encode(req.getNewMpin()));
+//        mpin.setAttempts(0);
+//        mpin.setLocked(false);
+//
+//        mpinRepo.save(mpin);
+//    }
 }
