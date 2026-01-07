@@ -2,6 +2,8 @@ package com.example.TCBA.Service;
 import com.example.TCBA.Entity.BrokerLogin;
 import com.example.TCBA.Entity.PaymentDetails;
 import com.example.TCBA.Entity.StackHolderContact;
+import com.example.TCBA.Exception.AppException;
+import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Repository.BrokerLoginRepository;
 import com.example.TCBA.Repository.MpinRepository;
 import com.example.TCBA.Repository.PaymentDetailsRepository;
@@ -27,14 +29,14 @@ public class BrokerLoginService {
     public LoginResponse login(String email, String rawPassword) {
 
         BrokerLogin broker = repository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Invalid email"));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(rawPassword, broker.getPassword())) {
-            throw new RuntimeException("Invalid password");
+            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         if (!Boolean.TRUE.equals(broker.getIsActive())) {
-            throw new RuntimeException("Account inactive");
+            throw new AppException(ErrorCode.FORBIDDEN);
         }
 
         String token = jwtService.generateToken(broker.getEmail());
@@ -52,14 +54,14 @@ public class BrokerLoginService {
     public void changePassword(Long userId, ChangePasswordRequest request) {
 
         BrokerLogin CHA = repository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
 
         if (!passwordEncoder.matches(request.getOldPassword(), CHA.getPassword())) {
-            throw new RuntimeException("Old password is incorrect");
+            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new RuntimeException("New password and confirm password do not match");
+            throw new AppException(ErrorCode.PASSWORD_MISMATCH);
         }
 
         CHA.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -69,7 +71,7 @@ public class BrokerLoginService {
     public StackHolderProfileResponse getProfile(String email) {
 
         BrokerLogin broker = repository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
 
         PaymentDetails payment =
                 paymentDetailsRepo.findTopByStackHolders(broker)
@@ -109,7 +111,6 @@ public class BrokerLoginService {
 
                 .build();
     }
-
 
 }
 
