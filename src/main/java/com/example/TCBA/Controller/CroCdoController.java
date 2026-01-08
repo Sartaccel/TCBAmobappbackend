@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/add/cro-cdo")
+@RequestMapping("/cro-cdo")
 @RequiredArgsConstructor
 public class CroCdoController {
 
     private final CroCdoService service;
 
-    @PostMapping("/create")
+    @PostMapping("/add")
     public ResponseEntity<ApiResponse> createCroCdo(
             @RequestBody CroCdoRequest request) {
 
@@ -28,7 +28,7 @@ public class CroCdoController {
 
             ApiResponse response = new ApiResponse(
                     "SUCCESS",
-                    "Order created successfully",
+                    "Details added successfully",
                     HttpStatus.OK
             );
 
