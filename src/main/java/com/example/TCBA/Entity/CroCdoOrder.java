@@ -2,12 +2,13 @@ package com.example.TCBA.Entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "cro_cdo_orders_mob")
+@Table(name = "containerOrder_mob")
 @Data
 public class CroCdoOrder {
 
@@ -15,27 +16,17 @@ public class CroCdoOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String orderType; // CRO / CDO
-
+    private String orderType;
     private String depot;
     private String linerName;
-
-    // CRO fields
-    private Integer noOfContainer;
-    private Integer container20ft;
-    private Integer container40ft;
-
-    // CDO fields
-    private String containerNumber;
-    private String containerSize;
-    private String customerName;
-    private String sealNo;
-    private String svcType;
-
     private String transporterName;
+    private String svcType;
+    @OneToMany(
+            mappedBy = "order",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<ContainerDetail> containers = new ArrayList<>();
 
-    @CreationTimestamp
     private LocalDateTime createdAt;
 }
-

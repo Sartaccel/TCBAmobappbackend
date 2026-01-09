@@ -13,14 +13,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class StackHolderProfileResponse {
 
-    private String stackHolderId;
+    private String stakeHolderId;
     private String firstName;
     private String lastName;
-
     private String legalName;
     private String entityType;
     private LocalDate incorporationDate;
-
     private String gst;
     private String pan;
     private String license;

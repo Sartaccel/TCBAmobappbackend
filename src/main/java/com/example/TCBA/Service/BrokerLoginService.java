@@ -42,10 +42,15 @@ public class BrokerLoginService {
         String token = jwtService.generateToken(broker.getEmail());
         boolean hasMpin = mpinRepo.existsByBroker(broker);
 
+//        return new LoginResponse(
+//                token,
+//                broker.getStakeHolderId(),
+//                broker.getWalletId(),
+//                hasMpin
+//
+//        );
         return new LoginResponse(
                 token,
-                broker.getStackHolderId(),
-                broker.getWalletId(),
                 hasMpin
 
         );
@@ -83,7 +88,7 @@ public class BrokerLoginService {
 
         return StackHolderProfileResponse.builder()
                 // BASIC
-                .stackHolderId(broker.getStackHolderId())
+                .stakeHolderId(broker.getStakeHolderId())
                 .firstName(broker.getFirstName())
                 .lastName(broker.getLastName())
                 .legalName(broker.getLegalName())
