@@ -1,59 +1,71 @@
 package com.example.TCBA.Service;
 
+import com.example.TCBA.Entity.ContainerDetail;
 import com.example.TCBA.Entity.CroCdoOrder;
+import com.example.TCBA.Repository.ContainerDetailRepository;
 import com.example.TCBA.Repository.CroCdoRepository;
-import com.example.TCBA.Request.CroCdoRequest;
+import com.example.TCBA.Request.ContainerCreateRequest;
+import com.example.TCBA.Request.CroCdoCreateRequest;
+import com.example.TCBA.Response.ContainerResponse;
+import com.example.TCBA.Response.CroCdoCreateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CroCdoService {
 
-    private final CroCdoRepository repository;
+    private final CroCdoRepository orderRepo;
+    private final ContainerDetailRepository containerRepo;
 
-    public CroCdoOrder saveOrder(CroCdoRequest request) {
-
-        // 🔒 Validation
-        if (request.getOrderType() == null) {
-            throw new RuntimeException("Order type is required");
-        }
-
-        if ("CRO".equalsIgnoreCase(request.getOrderType())) {
-            if (request.getNoOfContainer() == null) {
-                throw new RuntimeException("No of container is required for CRO");
-            }
-        }
-
-        if ("CDO".equalsIgnoreCase(request.getOrderType())) {
-            if (request.getContainerNumber() == null) {
-                throw new RuntimeException("Container number is required for CDO");
-            }
-        }
+    public CroCdoCreateResponse createOrder(CroCdoCreateRequest req) {
 
         CroCdoOrder order = new CroCdoOrder();
-        order.setOrderType(request.getOrderType());
-        order.setDepot(request.getDepot());
-        order.setLinerName(request.getLinerName());
-        order.setTransporterName(request.getTransporterName());
+        order.setOrderType(req.getOrderType());
+        order.setDepot(req.getDepot());
+        order.setLinerName(req.getLinerName());
+        order.setTransporterName(req.getTransporterName());
+        order.setSvcType(req.getSvcType());
+        order.setCreatedAt(LocalDateTime.now());
 
-        // CRO mapping
-        if ("CRO".equalsIgnoreCase(request.getOrderType())) {
-            order.setNoOfContainer(request.getNoOfContainer());
-            order.setContainer20ft(request.getContainer20ft());
-            order.setContainer40ft(request.getContainer40ft());
+        orderRepo.save(order);
+
+        List<ContainerResponse> containerResponses = new ArrayList<>();
+
+        for (ContainerCreateRequest c : req.getContainers()) {
+
+            ContainerDetail cd = new ContainerDetail();
+            cd.setContainerNumber(c.getContainerNumber());
+            cd.setContainerSize(c.getContainerSize());
+            cd.setCustomerName(c.getCustomerName());
+            cd.setSealNo(c.getSealNo());
+            cd.setOrder(order);
+
+            containerRepo.save(cd);
+
+            containerResponses.add(
+                    ContainerResponse.builder()
+                            .id(cd.getId())
+                            .containerNumber(cd.getContainerNumber())
+                            .containerSize(cd.getContainerSize())
+                            .customerName(cd.getCustomerName())
+                            .sealNo(cd.getSealNo())
+                            .build()
+            );
         }
 
-        // CDO mapping
-        if ("CDO".equalsIgnoreCase(request.getOrderType())) {
-            order.setContainerNumber(request.getContainerNumber());
-            order.setContainerSize(request.getContainerSize());
-            order.setCustomerName(request.getCustomerName());
-            order.setSealNo(request.getSealNo());
-            order.setSvcType(request.getSvcType());
-        }
-
-        return repository.save(order);
+        return CroCdoCreateResponse.builder()
+                .orderId(order.getId())
+                .orderType(order.getOrderType())
+                .depot(order.getDepot())
+                .linerName(order.getLinerName())
+                .transporterName(order.getTransporterName())
+                .svcType(order.getSvcType())
+                .containers(containerResponses)
+                .build();
     }
 }
-

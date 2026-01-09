@@ -1,8 +1,8 @@
 package com.example.TCBA.Controller;
 
-import com.example.TCBA.Entity.CroCdoOrder;
-import com.example.TCBA.Request.CroCdoRequest;
+import com.example.TCBA.Request.CroCdoCreateRequest;
 import com.example.TCBA.Response.ApiResponse;
+import com.example.TCBA.Response.CroCdoCreateResponse;
 import com.example.TCBA.Service.CroCdoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,32 +20,23 @@ public class CroCdoController {
     private final CroCdoService service;
 
     @PostMapping("/add")
-    public ResponseEntity<ApiResponse> createCroCdo(
-            @RequestBody CroCdoRequest request) {
+    public ResponseEntity<ApiResponse> create(
+            @RequestBody CroCdoCreateRequest request) {
 
-        try {
-            service.saveOrder(request);
+        CroCdoCreateResponse response =
+                service.createOrder(request);
 
-            ApiResponse response = new ApiResponse(
-                    "SUCCESS",
-                    "Details added successfully",
-                    HttpStatus.OK
-            );
+        String successMessage =
+                "CRO".equalsIgnoreCase(response.getOrderType())
+                        ? "CRO order created successfully"
+                        : "CDO order created successfully";
 
-            return ResponseEntity.ok(response);
-
-        } catch (RuntimeException e) {
-
-            ApiResponse response = new ApiResponse(
-                    "FAILURE",
-                    e.getMessage(),
-                    HttpStatus.BAD_REQUEST
-            );
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(response);
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse(
+                        "SUCCESS",
+                        successMessage,
+                        HttpStatus.CREATED
+                )
+        );
     }
-
 }

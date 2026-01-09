@@ -23,8 +23,8 @@ public class BrokerLogin {
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 private Long id;
 
-    @Column(name = "stack_holder_id", length = 100, unique = true)
-    private String stackHolderId;
+    @Column(name = "stake_holder_id", length = 100, unique = true)
+    private String stakeHolderId;
 
     private String legalName;
     private String entityType;

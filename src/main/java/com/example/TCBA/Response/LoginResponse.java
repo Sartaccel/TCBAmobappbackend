@@ -7,7 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class LoginResponse {
     private String token;
-    private String stackHolderId;
-    private String walletId;
     private boolean hasMpin;
 }
