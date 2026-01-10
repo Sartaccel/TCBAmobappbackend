@@ -21,6 +21,12 @@ public class CroCdoOrder {
     private String linerName;
     private String transporterName;
     private String svcType;
+
+    // 🔹 CRO-specific counts
+    private Integer totalContainers;
+    private Integer container20FtCount;
+    private Integer container40FtCount;
+
     @OneToMany(
             mappedBy = "order",
             cascade = CascadeType.ALL,
