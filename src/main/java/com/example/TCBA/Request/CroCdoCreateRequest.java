@@ -13,6 +13,12 @@ public class CroCdoCreateRequest {
     private String transporterName;
     private String svcType;
 
+    // 🔹 CRO-specific counts
+    private Integer totalContainers;
+    private Integer container20FtCount;
+    private Integer container40FtCount;
+
+
     private List<ContainerCreateRequest> containers;
 }
 
