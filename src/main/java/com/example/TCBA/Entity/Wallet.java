@@ -30,6 +30,14 @@ public class Wallet {
     )
     private BrokerLogin brokerLogin;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "stake_holder_id",
+            referencedColumnName = "stack_holder_id",
+            nullable = false
+    )
+    private BrokerLogin stakeHolder;
+
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal balance;
 

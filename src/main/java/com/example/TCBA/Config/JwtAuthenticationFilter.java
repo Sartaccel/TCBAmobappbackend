@@ -12,10 +12,72 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
+//
+//@Component
+//@RequiredArgsConstructor
+//public class JwtAuthenticationFilter extends OncePerRequestFilter {
+//
+//    private final JwtService jwtService;
+//
+//    @Override
+//    protected boolean shouldNotFilter(HttpServletRequest request) {
+//        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+//            return true;
+//        }
+//        return request.getServletPath().startsWith("/auth/");
+//    }
+//
+//    @Override
+//    protected void doFilterInternal(
+//            HttpServletRequest request,
+//            HttpServletResponse response,
+//            FilterChain filterChain
+//    ) throws ServletException, IOException {
+//
+//        String authHeader = request.getHeader("Authorization");
+//
+//        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
+//
+//        String token = authHeader.substring(7);
+//        String username;
+//
+//        try {
+//            username = jwtService.extractUsername(token); // sub
+//        } catch (Exception e) {
+//            logger.warn("Invalid JWT token", e);
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
+//
+//
+//        if (username != null &&
+//                SecurityContextHolder.getContext().getAuthentication() == null &&
+//                jwtService.isTokenValid(token, username)) {
+//
+//            UsernamePasswordAuthenticationToken authentication =
+//                    new UsernamePasswordAuthenticationToken(
+//                            username,
+//                            null,
+//                            List.of(new SimpleGrantedAuthority("ROLE_USER"))
+//                    );
+//
+//
+//            authentication.setDetails(
+//                    new WebAuthenticationDetailsSource().buildDetails(request)
+//            );
+//
+//            SecurityContextHolder.getContext()
+//                    .setAuthentication(authentication);
+//        }
+//
+//        filterChain.doFilter(request, response);
+//    }
+//}
 
 @Component
 @RequiredArgsConstructor
@@ -25,10 +87,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            return true;
-        }
-        return request.getServletPath().startsWith("/auth/");
+        return "OPTIONS".equalsIgnoreCase(request.getMethod())
+                || request.getServletPath().startsWith("/auth/");
     }
 
     @Override
@@ -40,43 +100,67 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
+        // Missing token
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+            sendUnauthorized(response, "Missing access token");
             return;
         }
 
         String token = authHeader.substring(7);
-        String username;
 
         try {
-            username = jwtService.extractUsername(token); // sub
-        } catch (Exception e) {
-            logger.warn("Invalid JWT token", e);
+            String username = jwtService.extractUsername(token);
+
+            // Expired token
+            if (jwtService.isTokenExpired(token)) {
+                sendUnauthorized(response, "Access token expired");
+                return;
+            }
+
+            // Invalid token
+            if (!jwtService.isTokenValid(token, username)) {
+                sendUnauthorized(response, "Invalid access token");
+                return;
+            }
+
+            // Valid token → set security context
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                username,
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                        );
+
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
+                );
+
+                SecurityContextHolder.getContext()
+                        .setAuthentication(authentication);
+            }
+
             filterChain.doFilter(request, response);
-            return;
+
+        } catch (Exception e) {
+            sendUnauthorized(response, "Invalid access token");
         }
+    }
 
+    // Helper method
+    private void sendUnauthorized(HttpServletResponse response, String message)
+            throws IOException {
 
-        if (username != null &&
-                SecurityContextHolder.getContext().getAuthentication() == null &&
-                jwtService.isTokenValid(token, username)) {
-
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            username,
-                            null,
-                            List.of(new SimpleGrantedAuthority("ROLE_USER"))
-                    );
-
-
-            authentication.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request)
-            );
-
-            SecurityContextHolder.getContext()
-                    .setAuthentication(authentication);
-        }
-
-        filterChain.doFilter(request, response);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("""
+            {
+              "status": "FAILURE",
+              "message": "%s",
+              "httpStatus": "UNAUTHORIZED"
+            }
+        """.formatted(message));
     }
 }
+

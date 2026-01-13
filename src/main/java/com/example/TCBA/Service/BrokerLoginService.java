@@ -39,22 +39,41 @@ public class BrokerLoginService {
             throw new AppException(ErrorCode.FORBIDDEN);
         }
 
-        String token = jwtService.generateToken(broker.getEmail());
+        String accessToken = jwtService.generateAccessToken(broker.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(broker.getEmail());
+
         boolean hasMpin = mpinRepo.existsByBroker(broker);
 
+        return new LoginResponse(
+                accessToken,
+                refreshToken,
+                hasMpin
+        );
+    }
+
+
+//    public LoginResponse login(String email, String rawPassword) {
+//
+//        BrokerLogin broker = repository.findByEmail(email)
+//                .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
+//
+//        if (!passwordEncoder.matches(rawPassword, broker.getPassword())) {
+//            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
+//        }
+//
+//        if (!Boolean.TRUE.equals(broker.getIsActive())) {
+//            throw new AppException(ErrorCode.FORBIDDEN);
+//        }
+//
+//        String token = jwtService.generateToken(broker.getEmail());
+//        boolean hasMpin = mpinRepo.existsByBroker(broker);
+//
 //        return new LoginResponse(
 //                token,
-//                broker.getStakeHolderId(),
-//                broker.getWalletId(),
 //                hasMpin
 //
 //        );
-        return new LoginResponse(
-                token,
-                hasMpin
-
-        );
-    }
+//    }
 
     public void changePassword(Long userId, ChangePasswordRequest request) {
 
