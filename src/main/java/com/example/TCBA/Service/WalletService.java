@@ -4,6 +4,7 @@ import com.example.TCBA.Config.RazorpayConfig;
 import com.example.TCBA.Entity.*;
 import com.example.TCBA.Repository.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,7 @@ public class WalletService {
 
 
     public Map<String, Object> createTopupOrder(int amount, HttpServletRequest request) throws Exception {
-        System.out.println("🟢 Creating Razorpay order for ₹" + amount);
+        System.out.println("Creating Razorpay order for ₹" + amount);
         String email = jwtUtil.getLoggedInEmail(request);
 
         BrokerLogin broker = brokerRepo.findByEmail(email)
@@ -36,16 +37,20 @@ public class WalletService {
                         Wallet.builder()
                                 .walletId(UUID.randomUUID().toString())
                                 .brokerLogin(broker)
+                                .stakeHolder(broker)
                                 .balance(BigDecimal.ZERO)
                                 .isActive(true)
                                 .build()
                 ));
-
+        if (wallet.getStakeHolder() == null) {
+            wallet.setStakeHolder(broker);
+        }
         var order = razorpayService.createOrder(amount);
 
         WalletTransaction txn = WalletTransaction.builder()
                 .transactionId(UUID.randomUUID().toString())
                 .wallet(wallet)
+                .stakeHolder(broker)
                 .razorpayOrderId(order.get("id"))
                 .amount(BigDecimal.valueOf(amount))
                 .txnType(WalletTransaction.TxnType.CREDIT)
@@ -63,51 +68,22 @@ public class WalletService {
 
         return res;
 
-
     }
 
-    public void verifyAndCredit(
-            String orderId,
-            String paymentId,
-            String signature,
-            HttpServletRequest request
-    ) {
-
-        if (orderId == null || paymentId == null || signature == null) {
-            throw new RuntimeException(
-                    "Invalid Razorpay callback data: " +
-                            "orderId=" + orderId +
-                            ", paymentId=" + paymentId +
-                            ", signature=" + signature
-            );
-        }
-
-        String email = jwtUtil.getLoggedInEmail(request);
-
-        BrokerLogin broker = brokerRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Broker not found"));
-
-        Wallet wallet = walletRepo.findByBrokerLogin(broker)
-                .orElseThrow(() -> new RuntimeException("Wallet not found"));
-
-        // ✅ 2. Fetch transaction safely
+    @Transactional
+    public void verifyAndCredit(String orderId, String paymentId, String signature) {
         WalletTransaction txn = txnRepo.findByRazorpayOrderId(orderId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found for orderId"));
-
-        // ✅ 3. Idempotency check
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
         if (txn.getStatus() == WalletTransaction.TxnStatus.SUCCESS) {
-            return; // already credited, do nothing
+            return;
         }
-
-        if (txnRepo.existsByRazorpayPaymentId(paymentId)) {
-            throw new RuntimeException("Duplicate payment detected");
+        Wallet wallet = txn.getWallet();
+        // 🔥 ABSOLUTE GUARANTEE (THIS FIXES THE ERROR)
+        if (wallet.getStakeHolder() == null) {
+            wallet.setStakeHolder(wallet.getBrokerLogin());
         }
-
-        // ✅ 4. Credit wallet
         wallet.setBalance(wallet.getBalance().add(txn.getAmount()));
         walletRepo.save(wallet);
-
-        // ✅ 5. Update transaction
         txn.setRazorpayPaymentId(paymentId);
         txn.setRazorpaySignature(signature);
         txn.setStatus(WalletTransaction.TxnStatus.SUCCESS);

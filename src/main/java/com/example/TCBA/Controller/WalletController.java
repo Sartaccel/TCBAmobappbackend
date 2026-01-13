@@ -15,14 +15,6 @@ public class WalletController {
 
     private final WalletService walletService;
 
-//    @PostMapping("/orders")
-//    public Object createOrder(
-//            @RequestParam int amount,
-//            HttpServletRequest request
-//    ) throws Exception {
-//        return walletService.createTopupOrder(amount, request);
-//    }
-
     @PostMapping("/orders")
     public Object createOrder(
             @RequestBody CreateOrderRequest requestBody,
@@ -33,7 +25,6 @@ public class WalletController {
         return walletService.createTopupOrder(amount, request);
     }
 
-
     @PostMapping("/orders/verify")
     public void verifyPayment(
             @RequestBody WalletVerifyRequest req,
@@ -42,8 +33,7 @@ public class WalletController {
         walletService.verifyAndCredit(
                 req.getOrderId(),
                 req.getPaymentId(),
-                req.getSignature(),
-                request
+                req.getSignature()
         );
     }
 

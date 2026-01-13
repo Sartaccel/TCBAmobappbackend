@@ -44,6 +44,14 @@ public class WalletTransaction {
     @JoinColumn(name = "wallet_id", nullable = false)
     private Wallet wallet;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "stake_holder_id",
+            referencedColumnName = "stack_holder_id",
+            nullable = false
+    )
+    private BrokerLogin stakeHolder;
+
     // Razorpay fields
     @Column(name = "razorpay_order_id", length = 100)
     private String razorpayOrderId;
