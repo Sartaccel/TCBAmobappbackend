@@ -20,6 +20,7 @@ public class GlobalExceptionHandler {
 
         HttpStatus status;
         String messageKey;
+        String errorCode = "";
 
         switch (ex.getErrorCode()) {
 
@@ -77,6 +78,14 @@ public class GlobalExceptionHandler {
                 messageKey = "resp.tcba.payment.required";
             }
 
+            // PAYOUT
+            case YARD_NOT_FOUND, NOT_A_YARD -> {
+                status = HttpStatus.NOT_FOUND;
+                messageKey = "resp.tcba.payout.notFountYard";
+            }
+
+
+
             default -> {
                 status = HttpStatus.INTERNAL_SERVER_ERROR;
                 messageKey = "resp.tcba.internal.error";
@@ -87,7 +96,7 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse(
                         "FAILURE",
                         commonUtil.getResponseMessage(messageKey),
-                        status
+                        status,""
                 ));
     }
 
@@ -98,7 +107,7 @@ public class GlobalExceptionHandler {
         ApiResponse response = new ApiResponse(
                 "FAILURE",
                 commonUtil.getResponseMessage("resp.tcba.internal.error"),
-                HttpStatus.INTERNAL_SERVER_ERROR
+                HttpStatus.INTERNAL_SERVER_ERROR,"INTERNAL_SERVER_ERROR"
         );
 
         return ResponseEntity

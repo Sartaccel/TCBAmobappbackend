@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface BrokerLoginRepository extends JpaRepository<BrokerLogin, Long> {
 
     Optional<BrokerLogin> findByEmail(String email);
+    Optional<BrokerLogin> findByGst(String gst);
 }

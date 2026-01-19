@@ -24,7 +24,7 @@ public class BrokerLogin {
 private Long id;
 
     @Column(name = "stack_holder_id", length = 100, unique = true)
-    private String stakeHolderId;
+    private String stackHolderId;
 
     private String legalName;
     private String entityType;

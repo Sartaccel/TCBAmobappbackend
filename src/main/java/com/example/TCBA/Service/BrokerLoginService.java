@@ -47,7 +47,7 @@ public class BrokerLoginService {
         return new LoginResponse(
                 accessToken,
                 refreshToken,
-                hasMpin
+                hasMpin, broker.getStackHolderId()
         );
     }
 
@@ -107,7 +107,7 @@ public class BrokerLoginService {
 
         return StackHolderProfileResponse.builder()
                 // BASIC
-                .stakeHolderId(broker.getStakeHolderId())
+                .stakeHolderId(broker.getStackHolderId())
                 .firstName(broker.getFirstName())
                 .lastName(broker.getLastName())
                 .legalName(broker.getLegalName())

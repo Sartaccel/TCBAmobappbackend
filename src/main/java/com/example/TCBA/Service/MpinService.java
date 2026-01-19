@@ -26,7 +26,7 @@ public class MpinService {
         BrokerLogin user = brokerRepo.findByEmail(email).orElseThrow();
 
         if (!req.getMpin().equals(req.getConfirmMpin()))
-            throw new RuntimeException("MPIN mismatch");
+            throw new AppException(ErrorCode.INVALID_MPIN);
 
         Mpin mpin = new Mpin();
         mpin.setBroker(user);

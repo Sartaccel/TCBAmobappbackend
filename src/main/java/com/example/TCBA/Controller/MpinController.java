@@ -36,7 +36,7 @@ public class MpinController {
         ApiResponse response = new ApiResponse(
                 "SUCCESS",
                 commonUtil.getResponseMessage("resp.tcba.mpin.set.ok"),
-                HttpStatus.OK
+                HttpStatus.OK,"MPIN_SET_OK"
         );
 
         return ResponseEntity.ok(response);
@@ -54,7 +54,7 @@ public class MpinController {
         ApiResponse response = new ApiResponse(
                 "SUCCESS",
                 commonUtil.getResponseMessage("resp.tcba.mpin.verify.ok"),
-                HttpStatus.OK
+                HttpStatus.OK,"MPIN_VERIFY_OK"
         );
 
         return ResponseEntity.ok(response);
@@ -72,7 +72,7 @@ public class MpinController {
         ApiResponse response = new ApiResponse(
                 "SUCCESS",
                 commonUtil.getResponseMessage("resp.tcba.mpin.change.ok"),
-                HttpStatus.OK
+                HttpStatus.OK,"MPIN_CHANGE_OK"
         );
 
         return ResponseEntity.ok(response);

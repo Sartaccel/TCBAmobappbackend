@@ -36,7 +36,7 @@ public class ForgotMpinController {
                 new ApiResponse(
                         "SUCCESS",
                         commonUtil.getResponseMessage("resp.tcba.mpin.forgot.ok"),
-                        HttpStatus.OK
+                        HttpStatus.OK,""
                 )
         );
     }
@@ -52,7 +52,7 @@ public class ForgotMpinController {
                 new ApiResponse(
                         "SUCCESS",
                         commonUtil.getResponseMessage("resp.tcba.mpin.otp.verify.ok"),
-                        HttpStatus.OK
+                        HttpStatus.OK,""
                 )
         );
     }
@@ -68,7 +68,7 @@ public class ForgotMpinController {
                 new ApiResponse(
                         "SUCCESS",
                         commonUtil.getResponseMessage("resp.tcba.mpin.reset.ok"),
-                        HttpStatus.OK
+                        HttpStatus.OK,"MPIN_RESET_OK"
                 )
         );
     }
