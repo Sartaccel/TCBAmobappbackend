@@ -14,22 +14,12 @@ public class PayoutController {
 
     private final YardPayoutService yardPayoutService;
 
-    /**
-     * GST-based Yard Payout
-     *
-     * Frontend sends:
-     * {
-     *   "fromStackHolderId": "TCBA001",
-     *   "toGstNumber": "TCBACVZ34F1Z5",
-     *   "amount": 100
-     * }
-     */
     @PostMapping("/yard")
     public ResponseEntity<?> yardPayout(
             @RequestBody YardPayoutRequest request) {
 
         JSONObject response =
-                yardPayoutService.payoutToYard(request);
+                (JSONObject) yardPayoutService.payoutToYard(request);
 
         return ResponseEntity.ok(response.toMap());
     }

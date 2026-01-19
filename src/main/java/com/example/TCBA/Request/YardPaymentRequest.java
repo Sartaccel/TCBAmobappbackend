@@ -5,8 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class YardPayoutRequest {
-
+public class YardPaymentRequest {
     private String stackHolderId;
     private String yardGstNumber;
     private BigDecimal amount;

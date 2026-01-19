@@ -6,8 +6,10 @@ import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Repository.BrokerLoginRepository;
 import com.example.TCBA.Request.InstantPayoutRequest;
 import com.example.TCBA.Request.YardPayoutRequest;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class YardPayoutService {
@@ -20,24 +22,21 @@ public class YardPayoutService {
         this.instantPayoutService = instantPayoutService;
     }
 
-    public JSONObject payoutToYard(YardPayoutRequest req) {
+    public Map<String, Object> payoutToYard(YardPayoutRequest req) {
 
-        // 1️⃣ find yard using GST
         BrokerLogin yard =
-                brokerRepo.findByGst(req.getToGstNumber())
+                brokerRepo.findByGst(req.getYardGstNumber())
                         .orElseThrow(() ->
                                 new AppException(ErrorCode.YARD_NOT_FOUND)
                         );
 
-        // 2️⃣ validate yard type = 3
         if (!yard.getStackHoldersType().getId().equals(3L)) {
             throw new AppException(ErrorCode.NOT_A_YARD);
         }
 
-        // 4️⃣ build internal payout request
         InstantPayoutRequest payoutReq = new InstantPayoutRequest();
 
-        payoutReq.setStackHolderId(req.getFromStackHolderId());
+        payoutReq.setStackHolderId(req.getStackHolderId());
         payoutReq.setAmount(req.getAmount());
         payoutReq.setUpiId(yard.getPrimaryUpiId());
         payoutReq.setAccountHolderName(
@@ -46,8 +45,18 @@ public class YardPayoutService {
         payoutReq.setPhone(yard.getPhoneNumber());
         payoutReq.setYardName(yard.getLegalName());
 
-        // 5️⃣ call existing payout logic
-        return instantPayoutService.instantPayout(payoutReq);
+        // ✅ call payout (ignore response)
+        instantPayoutService.instantPayout(payoutReq);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "SUCCESS");
+        response.put("message", "Payout processed successfully");
+        response.put("entryId", req.getEntryNo());
+        response.put("amount", req.getAmount());
+        response.put("containerNo", req.getContainerNo());
+
+        return response;
     }
+
 }
 

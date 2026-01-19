@@ -7,11 +7,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 import java.util.List;
 //
@@ -87,8 +87,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+
         return "OPTIONS".equalsIgnoreCase(request.getMethod())
-                || request.getServletPath().startsWith("/auth/");
+                || request.getServletPath().startsWith("/auth/")
+                || request.getServletPath().startsWith("/tcba/yard/login");
     }
 
     @Override
@@ -96,13 +98,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain
-    ) throws ServletException, IOException {
+    ) throws IOException, ServletException {
 
         String authHeader = request.getHeader("Authorization");
 
-        // Missing token
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            sendUnauthorized(response, "Missing access token","MISSING_ERROR_TOKEN");
+            sendUnauthorized(response, "Missing access token");
             return;
         }
 
@@ -111,56 +112,63 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String username = jwtService.extractUsername(token);
 
-            // Expired token
             if (jwtService.isTokenExpired(token)) {
-                sendUnauthorized(response, "Access token expired","ACCESS_TOKEN_EXPIRED");
+                sendUnauthorized(response, "Access token expired");
                 return;
             }
 
-            // Invalid token
             if (!jwtService.isTokenValid(token, username)) {
-                sendUnauthorized(response, "Invalid access token","INVALID_ACCESS_TOKEN");
+                sendUnauthorized(response, "Invalid access token");
                 return;
             }
 
-            // Valid token → set security context
-            if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                username,
-                                null,
-                                List.of(new SimpleGrantedAuthority("ROLE_USER"))
-                        );
+            // 🔥 detect who logged in
+            String userName = jwtService.extractUsername(token);
+            String yardId = jwtService.extractYardId(token);
 
-                authentication.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
-
-                SecurityContextHolder.getContext()
-                        .setAuthentication(authentication);
+            if (userName == null && yardId == null) {
+                sendUnauthorized(response, "Invalid token claims");
+                return;
             }
+
+            // ✅ authentication success
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            username,
+                            null,
+                            List.of()
+                    );
+
+            authentication.setDetails(
+                    new WebAuthenticationDetailsSource()
+                            .buildDetails(request)
+            );
+
+            SecurityContextHolder.getContext()
+                    .setAuthentication(authentication);
 
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
-            sendUnauthorized(response, "Invalid access token","INVALID_ACCESS_TOKEN");
+            sendUnauthorized(response, "Invalid access token");
         }
     }
 
-    // Helper method
-    private void sendUnauthorized(HttpServletResponse response, String message,String errorCode)
-            throws IOException {
+    private void sendUnauthorized(
+            HttpServletResponse response,
+            String message
+    ) throws IOException {
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
+
         response.getWriter().write("""
-            {
-              "status": "FAILURE",
-              "message": "%s",
-              "httpStatus": "UNAUTHORIZED","errorCode":"UNAUTHORIZED"
-            }
-        """.formatted(message));
+                {
+                  "status": "FAILURE",
+                  "message": "%s"
+                }
+                """.formatted(message));
     }
 }
+
 
