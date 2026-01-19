@@ -31,7 +31,8 @@ public class AuthController {
         ApiResponse response = new ApiResponse(
                 "SUCCESS",
                 commonUtil.getResponseMessage("resp.tcba.login.ok"),
-                HttpStatus.OK
+                HttpStatus.OK,
+                "LOGIN_SUCCESS"
         );
 
         response.setData(loginResponse);
@@ -54,14 +55,16 @@ public class AuthController {
             ApiResponse response = new ApiResponse(
                     "SUCCESS",
                     "Access token refreshed successfully",
-                    HttpStatus.OK
+                    HttpStatus.OK,
+                    "SUCCESS"
             );
 
             response.setData(
                     new LoginResponse(
                             newAccessToken,
                             request.getRefreshToken(), // same refresh token
-                            true // or false if you want to recalc
+                            true,// or false if you want to recalc
+                            ""
                     )
             );
 
@@ -72,7 +75,7 @@ public class AuthController {
             ApiResponse response = new ApiResponse(
                     "FAILURE",
                     "Invalid refresh token",
-                    HttpStatus.UNAUTHORIZED
+                    HttpStatus.UNAUTHORIZED,"REFRESH_EXPIRED"
             );
 
             return ResponseEntity
@@ -91,7 +94,7 @@ public class AuthController {
             ApiResponse response = new ApiResponse(
                     "SUCCESS",
                     commonUtil.getResponseMessage("resp.tcba.mpin.forgot.ok"),
-                    HttpStatus.OK
+                    HttpStatus.OK,"OTP_SENT"
             );
 
             return ResponseEntity.ok(response);
@@ -101,7 +104,7 @@ public class AuthController {
             ApiResponse response = new ApiResponse(
                     "FAILURE",
                     e.getMessage(),
-                    HttpStatus.BAD_REQUEST
+                    HttpStatus.BAD_REQUEST,"OTP_SENT_FAILED"
             );
 
             return ResponseEntity
@@ -123,7 +126,7 @@ public class AuthController {
             ApiResponse response = new ApiResponse(
                     "SUCCESS",
                     commonUtil.getResponseMessage("resp.tcba.mpin.otp.verify.ok"),
-                    HttpStatus.OK
+                    HttpStatus.OK,"OTP_VERIFIED"
             );
 
             return ResponseEntity.ok(response);
@@ -133,7 +136,7 @@ public class AuthController {
             ApiResponse response = new ApiResponse(
                     "FAILURE",
                     e.getMessage(),
-                    HttpStatus.UNAUTHORIZED
+                    HttpStatus.UNAUTHORIZED,"OTP_NOT_VERIFIED"
             );
 
             return ResponseEntity
@@ -157,7 +160,7 @@ public class AuthController {
             ApiResponse response = new ApiResponse(
                     "SUCCESS",
                     commonUtil.getResponseMessage("resp.tcba.password.reset.ok"),
-                    HttpStatus.OK
+                    HttpStatus.OK,"PASSWORD_RESET_OK"
             );
 
             return ResponseEntity.ok(response);
@@ -167,7 +170,7 @@ public class AuthController {
             ApiResponse response = new ApiResponse(
                     "FAILURE",
                     e.getMessage(),
-                    HttpStatus.BAD_REQUEST
+                    HttpStatus.BAD_REQUEST,"PASSWORD_RESET_FAIL"
             );
 
             return ResponseEntity

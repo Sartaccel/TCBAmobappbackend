@@ -102,7 +102,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Missing token
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            sendUnauthorized(response, "Missing access token");
+            sendUnauthorized(response, "Missing access token","MISSING_ERROR_TOKEN");
             return;
         }
 
@@ -113,13 +113,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Expired token
             if (jwtService.isTokenExpired(token)) {
-                sendUnauthorized(response, "Access token expired");
+                sendUnauthorized(response, "Access token expired","ACCESS_TOKEN_EXPIRED");
                 return;
             }
 
             // Invalid token
             if (!jwtService.isTokenValid(token, username)) {
-                sendUnauthorized(response, "Invalid access token");
+                sendUnauthorized(response, "Invalid access token","INVALID_ACCESS_TOKEN");
                 return;
             }
 
@@ -144,12 +144,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
-            sendUnauthorized(response, "Invalid access token");
+            sendUnauthorized(response, "Invalid access token","INVALID_ACCESS_TOKEN");
         }
     }
 
     // Helper method
-    private void sendUnauthorized(HttpServletResponse response, String message)
+    private void sendUnauthorized(HttpServletResponse response, String message,String errorCode)
             throws IOException {
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -158,7 +158,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             {
               "status": "FAILURE",
               "message": "%s",
-              "httpStatus": "UNAUTHORIZED"
+              "httpStatus": "UNAUTHORIZED","errorCode":"UNAUTHORIZED"
             }
         """.formatted(message));
     }

@@ -38,7 +38,7 @@ public class BrokerProfileController {
             ApiResponse response = new ApiResponse(
                     "SUCCESS",
                     commonUtil.getResponseMessage("resp.tcba.profile.fetch.ok"),
-                    HttpStatus.OK
+                    HttpStatus.OK,"OK"
             );
 
             response.setData(profile);
@@ -49,7 +49,7 @@ public class BrokerProfileController {
             ApiResponse response = new ApiResponse(
                     "FAILURE",
                     commonUtil.getResponseMessage("resp.tcba.profile.fetch.fail"),
-                    HttpStatus.UNAUTHORIZED
+                    HttpStatus.UNAUTHORIZED,"FETCH_FAILED"
             );
 
             return ResponseEntity
@@ -74,7 +74,7 @@ public class BrokerProfileController {
             ApiResponse response = new ApiResponse(
                     "SUCCESS",
                     "Password changed successfully",
-                    HttpStatus.OK
+                    HttpStatus.OK,""
             );
 
             return ResponseEntity.ok(response);
@@ -84,7 +84,7 @@ public class BrokerProfileController {
             ApiResponse response = new ApiResponse(
                     "FAILURE",
                     e.getMessage(),
-                    HttpStatus.BAD_REQUEST
+                    HttpStatus.BAD_REQUEST,""
             );
 
             return ResponseEntity

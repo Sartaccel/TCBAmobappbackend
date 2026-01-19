@@ -32,6 +32,14 @@ public enum ErrorCode {
 
     // COMMON
     BAD_REQUEST,
-    INTERNAL_ERROR
+    INTERNAL_ERROR,
+
+    // WALLET
+    WALLET_NOT_FOUND,
+    WALLET_BLOCKED,
+
+    //YARD
+    YARD_NOT_FOUND,
+    NOT_A_YARD
 }
 

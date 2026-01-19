@@ -32,19 +32,19 @@ public class WalletService {
         BrokerLogin broker = brokerRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Broker not found"));
 
-        Wallet wallet = walletRepo.findByBrokerLogin(broker)
+        String stakeHolderId = broker.getStackHolderId(); // CHA0001
+        Long brokerId = broker.getId();                    // 21
+
+        Wallet wallet = walletRepo.findByStakeHolderId(stakeHolderId)
                 .orElseGet(() -> walletRepo.save(
                         Wallet.builder()
                                 .walletId(UUID.randomUUID().toString())
-                                .brokerLogin(broker)
-                                .stakeHolder(broker)
+                                .stakeHolderId(stakeHolderId)
+                                .brokerId(brokerId)
                                 .balance(BigDecimal.ZERO)
                                 .isActive(true)
                                 .build()
                 ));
-        if (wallet.getStakeHolder() == null) {
-            wallet.setStakeHolder(broker);
-        }
         var order = razorpayService.createOrder(amount);
 
         WalletTransaction txn = WalletTransaction.builder()
@@ -79,9 +79,6 @@ public class WalletService {
         }
         Wallet wallet = txn.getWallet();
         // 🔥 ABSOLUTE GUARANTEE (THIS FIXES THE ERROR)
-        if (wallet.getStakeHolder() == null) {
-            wallet.setStakeHolder(wallet.getBrokerLogin());
-        }
         wallet.setBalance(wallet.getBalance().add(txn.getAmount()));
         walletRepo.save(wallet);
         txn.setRazorpayPaymentId(paymentId);
@@ -91,8 +88,17 @@ public class WalletService {
     }
 
     public BigDecimal getBalance(HttpServletRequest request) {
+
         String email = jwtUtil.getLoggedInEmail(request);
-        BrokerLogin broker = brokerRepo.findByEmail(email).orElseThrow();
-        return walletRepo.findByBrokerLogin(broker).orElseThrow().getBalance();
+
+        BrokerLogin broker = brokerRepo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Broker not found"));
+
+        Wallet wallet = walletRepo
+                .findByStakeHolderId(broker.getStackHolderId())
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+
+        return wallet.getBalance();
     }
+
 }

@@ -22,21 +22,11 @@ public class Wallet {
     private String walletId;
 
     // 🔐 BACKEND decides whose wallet
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "broker_id",
-            nullable = false,
-            unique = true
-    )
-    private BrokerLogin brokerLogin;
+    @Column(name = "stake_holder_id")
+    private String stakeHolderId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "stake_holder_id",
-            referencedColumnName = "stack_holder_id",
-            nullable = false
-    )
-    private BrokerLogin stakeHolder;
+    @Column(name = "broker_id")
+    private Long brokerId;
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal balance;
