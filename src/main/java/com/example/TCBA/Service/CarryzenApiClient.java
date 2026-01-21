@@ -4,12 +4,16 @@ import com.example.TCBA.Config.CarryzenApiConfig;
 import com.example.TCBA.Request.CroCdoOrderRequest;
 import com.example.TCBA.Request.DoRoEntriesSearchRequest;
 import com.example.TCBA.Request.GateContainerSearchRequest;
+import com.example.TCBA.Request.YardUnpaidRequest;
+import com.example.TCBA.Response.YardApiResponse;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 @Service
 public class CarryzenApiClient {
@@ -26,7 +30,7 @@ public class CarryzenApiClient {
         this.apiConfig = apiConfig;
     }
 
-    public ResponseEntity<String> sendDoRoEntry(CroCdoOrderRequest request) {
+    public ResponseEntity<String> sendDoRoEntry(List<CroCdoOrderRequest> request) {
 
         String token = tokenService.getToken();
 
@@ -34,7 +38,7 @@ public class CarryzenApiClient {
         headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<CroCdoOrderRequest> entity =
+        HttpEntity<List<CroCdoOrderRequest>> entity =
                 new HttpEntity<>(request, headers);
 
         return restTemplate.postForEntity(
@@ -80,5 +84,26 @@ public class CarryzenApiClient {
                 entity,
                 String.class
         );
+    }
+
+    public YardApiResponse fetchUnpaid(int page, int limit) {
+
+        String token = tokenService.getToken();
+
+        YardUnpaidRequest request = new YardUnpaidRequest();
+        request.setPaymentStatus("Unpaid");
+        request.setPage(page);
+        request.setLimit(limit);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<YardUnpaidRequest> entity = new HttpEntity<>(request, headers);
+
+        ResponseEntity<YardApiResponse> response =
+                restTemplate.postForEntity(apiConfig.getYARD_API_URL(), entity, YardApiResponse.class);
+
+        return response.getBody();
     }
 }

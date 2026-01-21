@@ -5,9 +5,13 @@ import com.example.TCBA.Repository.CroCdoOrderRepository;
 import com.example.TCBA.Request.CroCdoOrderRequest;
 import com.example.TCBA.Request.DoRoEntriesSearchRequest;
 import com.example.TCBA.Request.GateContainerSearchRequest;
+import com.example.TCBA.Request.YardUnpaidRequest;
+import com.example.TCBA.Response.YardApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional
@@ -33,19 +37,30 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         return carryzenApiClient.fetchDoRoEntries(request).getBody();
     }
 
+    @Override
+    public YardApiResponse fetchUnpaidPayments(YardUnpaidRequest request) {
+
+        return carryzenApiClient.fetchUnpaid(
+                request.getPage(),
+                request.getLimit()
+        );
+    }
 
     @Transactional
     @Override
-    public ResponseEntity<String> createOrder(CroCdoOrderRequest request) {
+    public ResponseEntity<String> createOrder(List<CroCdoOrderRequest> request) {
 
-        CroCdoOrder order = mapToEntity(request);
-        repository.save(order);
+        List<CroCdoOrder> orders = request.stream()
+                .map(this::mapToEntity)
+                .toList();
+
+        repository.saveAll(orders);
 
         ResponseEntity<String> carryzenResponse =
                 carryzenApiClient.sendDoRoEntry(request);
 
         if (!carryzenResponse.getStatusCode().is2xxSuccessful()) {
-            throw new RuntimeException("Carryzen API failed");
+            throw new RuntimeException("Carryzen API bulk call failed");
         }
 
         return carryzenResponse;
