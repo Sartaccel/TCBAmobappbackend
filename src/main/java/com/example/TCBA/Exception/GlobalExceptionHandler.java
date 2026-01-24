@@ -87,6 +87,11 @@ public class GlobalExceptionHandler {
                 messageKey = "resp.tcba.payout.notFountYard";
             }
 
+            case NOT_A_INSTANT_USER -> {
+                status = HttpStatus.NOT_FOUND;
+                messageKey = "resp.tcba.payout.NotAInstant";
+            }
+
 
 
             default -> {

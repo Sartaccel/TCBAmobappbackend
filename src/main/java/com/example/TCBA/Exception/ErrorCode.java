@@ -40,6 +40,9 @@ public enum ErrorCode {
 
     //YARD
     YARD_NOT_FOUND,
-    NOT_A_YARD
+    NOT_A_YARD,
+
+    //PAYMENT
+    NOT_A_INSTANT_USER,
 }
 

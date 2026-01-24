@@ -1,9 +1,11 @@
 package com.example.TCBA.Service;
 
 import com.example.TCBA.Entity.BrokerLogin;
+import com.example.TCBA.Entity.PaymentDetails;
 import com.example.TCBA.Exception.AppException;
 import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Repository.BrokerLoginRepository;
+import com.example.TCBA.Repository.PaymentDetailsRepository;
 import com.example.TCBA.Request.InstantPayoutRequest;
 import com.example.TCBA.Request.YardPayoutRequest;
 import com.example.TCBA.Response.InstantPayoutResponse;
@@ -12,12 +14,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class YardPayoutService {
 
     private final BrokerLoginRepository brokerRepo;
+    private final PaymentDetailsRepository paymentDetailsRepository;
     private final InstantPayoutService instantPayoutService;
 
     public InstantPayoutResponse payoutToYard(YardPayoutRequest req)
@@ -29,8 +33,25 @@ public class YardPayoutService {
                                 new AppException(ErrorCode.YARD_NOT_FOUND)
                         );
 
+        BrokerLogin CHA =
+                brokerRepo.findByStackHolderId(req.getStackHolderId())
+                        .orElseThrow(() ->
+                                new RuntimeException("User Not Found")
+                        );
+
+        PaymentDetails paymentDetails =
+                paymentDetailsRepository.findByStackHolders_Id(CHA.getId())
+                        .orElseThrow(() ->
+                                new RuntimeException("Details Not Found")
+                        );
+
         if (!yard.getStackHoldersType().getId().equals(3L)) {
             throw new AppException(ErrorCode.NOT_A_YARD);
+        }
+
+        if (!paymentDetails.getPaymentTerms().equals("instant"))
+        {
+            throw new AppException(ErrorCode.NOT_A_INSTANT_USER);
         }
 
         InstantPayoutRequest payoutReq = new InstantPayoutRequest();
