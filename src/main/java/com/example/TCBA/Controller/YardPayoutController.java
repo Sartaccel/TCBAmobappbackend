@@ -2,10 +2,13 @@ package com.example.TCBA.Controller;
 
 import com.example.TCBA.Request.YardPaymentRequest;
 import com.example.TCBA.Request.YardPayoutRequest;
+import com.example.TCBA.Response.ApiResponse;
+import com.example.TCBA.Response.InstantPayoutResponse;
 import com.example.TCBA.Service.JwtService;
 import com.example.TCBA.Service.YardPayoutService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,11 +50,23 @@ public class YardPayoutController {
         payout.setAmount(request.getAmount());
         payout.setEntryNo(request.getEntryNo());
         payout.setContainerNo(request.getContainerNo());
+        payout.setPaymentRequestId(request.getPaymentRequestId());
 
         // 🔥 INTERNAL PAYOUT TRIGGER
-        return ResponseEntity.ok(
-                yardPayoutService.payoutToYard(payout)
-        );
+        InstantPayoutResponse payoutResponse =
+                yardPayoutService.payoutToYard(payout);
+
+        ApiResponse apiResponse =
+                new ApiResponse(
+                        "SUCCESS",
+                        "Yard payout processed successfully",
+                        HttpStatus.OK,
+                        "YARD_PAYOUT_OK"
+                );
+
+        apiResponse.setData(payoutResponse);
+        return ResponseEntity.ok(apiResponse);
+
     }
 }
 

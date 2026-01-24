@@ -51,30 +51,6 @@ public class BrokerLoginService {
         );
     }
 
-
-//    public LoginResponse login(String email, String rawPassword) {
-//
-//        BrokerLogin broker = repository.findByEmail(email)
-//                .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
-//
-//        if (!passwordEncoder.matches(rawPassword, broker.getPassword())) {
-//            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
-//        }
-//
-//        if (!Boolean.TRUE.equals(broker.getIsActive())) {
-//            throw new AppException(ErrorCode.FORBIDDEN);
-//        }
-//
-//        String token = jwtService.generateToken(broker.getEmail());
-//        boolean hasMpin = mpinRepo.existsByBroker(broker);
-//
-//        return new LoginResponse(
-//                token,
-//                hasMpin
-//
-//        );
-//    }
-
     public void changePassword(Long userId, ChangePasswordRequest request) {
 
         BrokerLogin CHA = repository.findById(userId)
@@ -132,9 +108,7 @@ public class BrokerLoginService {
                 .tdsPercent(payment != null ? payment.getTdsPercent() : null)
                 .transactionLimit(payment != null ? payment.getTransactionLimit() : null)
                 .proformaInvoice(payment != null ? payment.getProformaInvoice() : null)
-
                 .build();
     }
-
 }
 

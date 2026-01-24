@@ -16,8 +16,6 @@ public class RazorpayService {
             @Value("${razorpay.key.secret}") String keySecret
     ) throws Exception {
 
-        System.out.println("RAZORPAY KEY LOADED = " + keyId); // 🔥 DEBUG
-
         this.razorpayClient = new RazorpayClient(keyId, keySecret);
     }
 

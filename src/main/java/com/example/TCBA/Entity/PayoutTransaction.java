@@ -23,12 +23,22 @@ public class PayoutTransaction {
 
     private String stackHolderId;
     private BigDecimal amount;
+    private BigDecimal total_Amount;
+    private BigDecimal tds_Detected;
 
     @Column(nullable = false, unique = true)
     private String referenceId;
 
+    private String paymentRequestId;
+
+    private String bankAccountNumber;
+    private String ifscCode;
+
     @Column(name = "yard_name")
     private String yardName;
+
+    private String entryNo;
+    private String containerNo;
 
     private String razorpayPayoutId;
 

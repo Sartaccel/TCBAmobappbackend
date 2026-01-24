@@ -15,6 +15,6 @@ public class ApiResponse {
     private Object data;
 
     public ApiResponse(String status, String message, HttpStatus statusCode,String errorCode) {
-        this.headers = new HeaderInfo(status, message, statusCode.value(), LocalDateTime.now());
+        this.headers = new HeaderInfo(status, message, statusCode.value(), LocalDateTime.now(),errorCode);
     }
 }

@@ -5,25 +5,21 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class CroCdoOrderRequest {
+public class CroOrderRequest {
 
     private String loginCode;
     private String entryType;
     private LocalDateTime entryDate;
     private String entryNumber;
-    private String containerNo;
-    private String containerSize;
-    private String sealNo;
-    private String movementType;
     private String yardCode;
-    private String chaCode;
-    private String linerCode;
     private String yardCompanyName;
+    private String chaCode;
     private String chaCompanyName;
+    private String linerCode;
     private String lineCompanyName;
-    private String transportName;
     private String transportCode;
-    private Integer totalContainers;
+    private String transportName;
+    private Integer noOfContainer;
     private Integer count20ft;
     private Integer count40ft;
 }

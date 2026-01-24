@@ -12,4 +12,5 @@ public class YardPayoutRequest {
     private BigDecimal amount;
     private String entryNo;
     private String containerNo;
+    private String paymentRequestId;
 }

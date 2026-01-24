@@ -19,6 +19,10 @@ public class InstantPayoutRequest {
     private String phone;
     private String yardName;
     private String stackHolderId;
+    private String entryNo;
+    private String containerNo;
+    private String paymentRequestId;
+
 
     // bank details (optional)
     private String accountNumber;

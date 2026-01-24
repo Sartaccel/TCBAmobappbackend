@@ -1,17 +1,13 @@
 package com.example.TCBA.Controller;
 
-import com.example.TCBA.Entity.CroCdoOrder;
 import com.example.TCBA.Request.CroCdoOrderRequest;
+import com.example.TCBA.Request.CroOrderRequest;
 import com.example.TCBA.Request.DoRoEntriesSearchRequest;
 import com.example.TCBA.Request.GateContainerSearchRequest;
-import com.example.TCBA.Request.YardUnpaidRequest;
-import com.example.TCBA.Response.YardApiResponse;
+import com.example.TCBA.Response.YardDropdownResponse;
 import com.example.TCBA.Service.CroCdoOrderService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,9 +21,14 @@ public class CroCdoOrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping("/add")
+    @PostMapping("/cdo/add")
     public ResponseEntity<String> createOrder(@RequestBody List<CroCdoOrderRequest> request) {
         return orderService.createOrder(request);
+    }
+
+    @PostMapping("/ro/add")
+    public ResponseEntity<String> createRoOrder(@RequestBody List<CroOrderRequest> request) {
+        return orderService.createRoOrder(request);
     }
 
     @PostMapping("/gate-containers")
@@ -46,13 +47,11 @@ public class CroCdoOrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/unpaid")
-    public ResponseEntity<YardApiResponse> fetchUnpaidPayments(
-            @RequestBody YardUnpaidRequest request) {
+    @GetMapping("/dropdown")
+    public ResponseEntity<List<YardDropdownResponse>> getYards() {
 
-        YardApiResponse response =
-                orderService.fetchUnpaidPayments(request);
+        List<YardDropdownResponse> yards = orderService.getYards();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(yards);
     }
 }

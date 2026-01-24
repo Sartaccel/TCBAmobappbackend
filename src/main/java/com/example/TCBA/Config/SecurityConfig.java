@@ -53,7 +53,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/auth/**","/tcba/**").permitAll()
+                        .requestMatchers("/auth/**","/tcba/**","/api/webhook/razorpay").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

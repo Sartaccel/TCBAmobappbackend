@@ -10,4 +10,5 @@ public interface PaymentDetailsRepository
         extends JpaRepository<PaymentDetails, Long> {
 
     Optional<PaymentDetails> findTopByStackHolders(BrokerLogin broker);
+    Optional<PaymentDetails> findByStackHolders_Id(Long stackHolderId);
 }

@@ -1,6 +1,7 @@
 package com.example.TCBA.Service;
 
 import com.example.TCBA.Config.CarryzenApiConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,10 +13,13 @@ import java.time.Instant;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class CarryzenTokenService {
 
-    private String token;
-    private Instant expiry;
+    private String accessToken;
+    private String refreshToken;
+    private Instant accessExpiry;
+    private Instant refreshExpiry;
 
     private final RestTemplate restTemplate;
     private final CarryzenApiConfig apiConfig;
@@ -26,18 +30,27 @@ public class CarryzenTokenService {
     }
 
     // Main entry point
-    public synchronized String getToken() {
-        if (token == null || expiry == null || Instant.now().isAfter(expiry)) {
-            login();
+    public synchronized String getAccessToken() {
+
+        if (accessToken == null || accessExpiry == null || Instant.now().isAfter(accessExpiry)) {
+            refreshOrLogin();
         }
-        return token;
+        return accessToken;
     }
 
-    // Force refresh (used when API returns 401)
-    public synchronized void forceRefresh() {
-        this.token = null;
-        this.expiry = null;
-        login();
+    // Called when API returns 401
+    public synchronized void handleUnauthorized() {
+        refreshOrLogin();
+    }
+
+    // Decides whether to refresh or login
+    private synchronized void refreshOrLogin() {
+
+        if (refreshToken == null || refreshExpiry == null || Instant.now().isAfter(refreshExpiry)) {
+            login();   // refresh expired → full login
+        } else {
+            refreshAccessToken();  // refresh still valid → regenerate tokens
+        }
     }
 
     private void login() {
@@ -60,39 +73,47 @@ public class CarryzenTokenService {
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
             throw new RuntimeException("Carryzen Login API failed");
         }
+        parseAndStoreToken(response.getBody());
 
-        Map<String, Object> responseBody = response.getBody();
-
-        Object accessToken = responseBody.get("accessToken");
-        Object expiresIn = responseBody.get("expiresIn");
-
-        if (accessToken == null || expiresIn == null) {
-            throw new RuntimeException("Invalid login response from Carryzen API");
-        }
-
-        this.token = accessToken.toString();
-
-        long expirySeconds = parseExpiryToSeconds(expiresIn.toString());
-
-        // add safety buffer of 30 seconds
-        this.expiry = Instant.now().plusSeconds(expirySeconds - 30);
     }
 
-    // Parses "60 minutes" → 3600 seconds
-    private long parseExpiryToSeconds(String expiresIn) {
+    // 2️⃣ Refresh API (Bearer refresh token, empty body)
+    private synchronized void refreshAccessToken() {
 
-        String[] parts = expiresIn.split(" ");
-        long value = Long.parseLong(parts[0]);
-        String unit = parts[1].toLowerCase();
+        log.info("Refreshing Carryzen token using refreshToken");
 
-        if (unit.startsWith("minute")) {
-            return value * 60;
-        } else if (unit.startsWith("hour")) {
-            return value * 3600;
-        } else if (unit.startsWith("second")) {
-            return value;
-        } else {
-            throw new IllegalArgumentException("Unknown expiresIn format: " + expiresIn);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(refreshToken);   // IMPORTANT: refresh token here
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(
+                apiConfig.getRefreshUrl(), entity, Map.class
+        );
+
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            log.warn("Refresh token failed. Performing fresh login.");
+            login();
+            return;
         }
+
+        parseAndStoreToken(response.getBody());
+    }
+
+    // Parses login & refresh response
+    private void parseAndStoreToken(Map<String, Object> body) {
+
+        this.accessToken = body.get("accessToken").toString();
+        this.refreshToken = body.get("refreshToken").toString();
+
+        Instant accessExpiresAt = Instant.parse(body.get("accessExpiresAt").toString() + "Z");
+        Instant refreshExpiresAt = Instant.parse(body.get("refreshExpiresAt").toString() + "Z");
+
+        // Safety buffer
+        this.accessExpiry = accessExpiresAt.minusSeconds(120);
+        this.refreshExpiry = refreshExpiresAt.minusSeconds(120);
+
+        log.info("Carryzen tokens updated. Access expires at {}", accessExpiry);
     }
 }

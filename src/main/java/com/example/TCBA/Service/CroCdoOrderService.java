@@ -2,11 +2,12 @@ package com.example.TCBA.Service;
 
 import com.example.TCBA.Entity.CroCdoOrder;
 import com.example.TCBA.Request.CroCdoOrderRequest;
+import com.example.TCBA.Request.CroOrderRequest;
 import com.example.TCBA.Request.DoRoEntriesSearchRequest;
 import com.example.TCBA.Request.GateContainerSearchRequest;
-import com.example.TCBA.Request.YardUnpaidRequest;
-import com.example.TCBA.Response.YardApiResponse;
+import com.example.TCBA.Response.YardDropdownResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,5 +19,7 @@ public interface CroCdoOrderService {
 
     String fetchDoRoEntries(DoRoEntriesSearchRequest request);
 
-    YardApiResponse fetchUnpaidPayments(YardUnpaidRequest request);
+    ResponseEntity<String> createRoOrder(List<CroOrderRequest> request);
+
+    List<YardDropdownResponse> getYards();
 }

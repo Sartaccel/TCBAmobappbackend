@@ -42,14 +42,17 @@ public class GlobalExceptionHandler {
             case MPIN_INVALID -> {
                 status = HttpStatus.BAD_REQUEST;
                 messageKey = "resp.tcba.mpin.invalid";
+                errorCode = "MPIN_INVALID";
             }
             case MPIN_LAST_ATTEMPT -> {
                 status = HttpStatus.BAD_REQUEST;
                 messageKey = "resp.tcba.mpin.last_attempt";
+                errorCode="MPIN_LAST_ATTEMPT";
             }
             case MPIN_LOCKED -> {
                 status = HttpStatus.FORBIDDEN;
                 messageKey = "resp.tcba.mpin.locked";
+                errorCode ="MPIN_LOCKED";
             }
             case MPIN_MISMATCH -> {
                 status = HttpStatus.BAD_REQUEST;
@@ -96,7 +99,8 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse(
                         "FAILURE",
                         commonUtil.getResponseMessage(messageKey),
-                        status,""
+                        status,
+                        errorCode
                 ));
     }
 

@@ -21,7 +21,9 @@ public class CarryzenApiConfig {
 
     private final String baseUrl = "https://api.carryzen.com";
     private final String loginUrl = "https://carryzen.co.in/carryzen/tcba/tcba_generateToken";
+    private final String refreshUrl = "https://carryzen.co.in/carryzen/tcba/tcba_refreshToken";
     private final String in_out_Url = "https://carryzen.co.in/carryzen/tcba/tcba_doroentry";
+    private final String ro_entry_url = "https://carryzen.co.in/carryzen/tcba/tcba_roentry";
     private final String view_DoRoEntries = "https://carryzen.co.in/carryzen/tcba/tcba_getDoRoEntries";
     private final String view_gated_containers = "https://carryzen.co.in/carryzen/tcba/tcba_getGateContainersForCreditCHA";
 

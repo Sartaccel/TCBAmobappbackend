@@ -1,10 +1,13 @@
 package com.example.TCBA.Controller;
 
 import com.example.TCBA.Entity.BrokerLogin;
+import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Repository.BrokerLoginRepository;
 import com.example.TCBA.Request.YardLoginRequest;
+import com.example.TCBA.Response.ApiResponse;
 import com.example.TCBA.Service.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+
+import static com.example.TCBA.Exception.ErrorCode.INVALID_CREDENTIALS;
 
 @RestController
 @RequestMapping("/tcba/yard")
@@ -35,9 +40,16 @@ public class YardAuthController {
 
         if (yard == null) {
             return ResponseEntity
-                    .status(401)
-                    .body("Invalid email or password");
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(
+                            new ApiResponse(
+                                    "FAILURE",
+                                    "No Yard Found",
+                                    HttpStatus.UNAUTHORIZED,"NO_YARD_FOUND"
+                            )
+                    );
         }
+
 
         // 2️⃣ Check password
         if (!passwordEncoder.matches(
@@ -45,8 +57,14 @@ public class YardAuthController {
                 yard.getPassword())) {
 
             return ResponseEntity
-                    .status(401)
-                    .body("Invalid email or password");
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(
+                            new ApiResponse(
+                                    "FAILURE",
+                                    "Invalid Email or Password",
+                                    HttpStatus.UNAUTHORIZED,"INVALID_CREDENTIALS"
+                            )
+                    );
         }
 
         // 3️⃣ Generate JWT with yardId
