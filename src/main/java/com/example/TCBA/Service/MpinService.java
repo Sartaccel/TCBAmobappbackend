@@ -46,27 +46,7 @@ public class MpinService {
         mpinAuthService.verifyMpin(user, mpinValue);
     }
 
-
-//    public void verifyMpin(String email, String mpinValue) {
-//
-//        BrokerLogin user = brokerRepo.findByEmail(email).orElseThrow();
-//        Mpin mpin = mpinRepo.findByBroker(user).orElseThrow();
-//
-//        if (mpin.isLocked())
-//            throw new RuntimeException("MPIN locked");
-//
-//        if (!encoder.matches(mpinValue, mpin.getMpinHash())) {
-//            mpin.setAttempts(mpin.getAttempts() + 1);
-//            if (mpin.getAttempts() >= 3) mpin.setLocked(true);
-//            mpinRepo.save(mpin);
-//            throw new RuntimeException("Invalid MPIN");
-//     }
-//
-//        mpin.setAttempts(0);
-//        mpinRepo.save(mpin);
-//    }
-
-public void changeMpin(String email, ChangeMpinRequest req) {
+    public void changeMpin(String email, ChangeMpinRequest req) {
 
     // Step 1: Validate new & confirm MPIN
     if (!req.getNewMpin().equals(req.getConfirmMpin())) {

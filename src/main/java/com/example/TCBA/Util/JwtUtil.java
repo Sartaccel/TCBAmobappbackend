@@ -17,7 +17,7 @@ public class JwtUtil {
             "TCBA_SUPER_SECRET_KEY_2026";
 
     private final long EXPIRY =
-            1000 * 60 * 30; // 30 mins
+            1000 * 60 * 1;
 
     public String generateToken(BrokerLogin user) {
 

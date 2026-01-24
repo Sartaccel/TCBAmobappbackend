@@ -23,6 +23,10 @@ private String secret;
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
 
+    @Value("${jwt.yard-token-expiration}")
+    private long yardTokenExpiration;
+
+
     private byte[] getKey() {
         return secret.getBytes(StandardCharsets.UTF_8);
     }
@@ -52,7 +56,7 @@ private String secret;
                 .claim("yardId", yard.getStackHolderId())
                 .setIssuedAt(new Date())
                 .setExpiration(
-                        new Date(System.currentTimeMillis() + 30 * 60 * 1000)
+                        new Date(System.currentTimeMillis() + yardTokenExpiration)
                 )
                 .signWith(Keys.hmacShaKeyFor(getKey()))
                 .compact();

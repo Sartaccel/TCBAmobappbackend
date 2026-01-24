@@ -10,4 +10,6 @@ public interface PayoutTransactionRepository
         extends JpaRepository<PayoutTransaction, Long> {
 
     Optional<PayoutTransaction> findByReferenceId(String referenceId);
+
+    Optional<PayoutTransaction> findByRazorpayPayoutId(String razorpayPayoutId);
 }

@@ -12,4 +12,5 @@ public class HeaderInfo {
     private String message;
     private int statusCode;
     private LocalDateTime timestamp;
+    private String errorCode;
 }
