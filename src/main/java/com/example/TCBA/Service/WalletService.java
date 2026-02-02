@@ -78,7 +78,6 @@ public class WalletService {
             return;
         }
         Wallet wallet = txn.getWallet();
-        // 🔥 ABSOLUTE GUARANTEE (THIS FIXES THE ERROR)
         wallet.setBalance(wallet.getBalance().add(txn.getAmount()));
         walletRepo.save(wallet);
         txn.setRazorpayPaymentId(paymentId);

@@ -88,4 +88,20 @@ public class CarryzenApiClient {
                 String.class
         );
     }
+    public ResponseEntity<String> fetchChaDashboard(ChaDashboardRequest request) {
+
+        String token = tokenService.getAccessToken();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<ChaDashboardRequest> entity = new HttpEntity<>(request, headers);
+
+        return restTemplate.postForEntity(
+                apiConfig.getCha_dashboard(),
+                entity,
+                String.class
+        );
+    }
 }

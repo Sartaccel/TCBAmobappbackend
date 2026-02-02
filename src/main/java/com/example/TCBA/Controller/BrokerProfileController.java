@@ -67,7 +67,6 @@ public class BrokerProfileController {
             // 🔹 username assumed as email
             BrokerLogin user = repository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
-            System.out.println(user);
             // 🔹 call your service
             service.changePassword(user.getId(), request);
 

@@ -12,4 +12,5 @@ public interface PayoutTransactionRepository
     Optional<PayoutTransaction> findByReferenceId(String referenceId);
 
     Optional<PayoutTransaction> findByRazorpayPayoutId(String razorpayPayoutId);
-}
+
+    boolean existsByPaymentRequestId(String paymentRequestId);}

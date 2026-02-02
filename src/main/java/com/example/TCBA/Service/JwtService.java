@@ -62,6 +62,18 @@ private String secret;
                 .compact();
     }
 
+    public String generateClientAccessToken(String clientId) {
+
+        return Jwts.builder()
+                .setSubject(clientId)
+                .setIssuedAt(new Date())
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + accessExpiration)
+                )
+                .signWith(Keys.hmacShaKeyFor(getKey()))
+                .compact();
+    }
+
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }

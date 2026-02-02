@@ -1,4 +1,5 @@
 package com.example.TCBA.Service;
+
 import com.example.TCBA.Entity.BrokerLogin;
 import com.example.TCBA.Entity.PaymentDetails;
 import com.example.TCBA.Entity.StackHolderContact;
@@ -11,6 +12,7 @@ import com.example.TCBA.Repository.StackHolderContactRepository;
 import com.example.TCBA.Request.ChangePasswordRequest;
 import com.example.TCBA.Response.LoginResponse;
 import com.example.TCBA.Response.StackHolderProfileResponse;
+import com.example.TCBA.Util.AesEncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class BrokerLoginService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final MpinRepository mpinRepo;
+    private final AesEncryptionUtil util;
 
     public LoginResponse login(String email, String rawPassword) {
 
@@ -89,9 +92,9 @@ public class BrokerLoginService {
                 .legalName(broker.getLegalName())
                 .entityType(broker.getEntityType())
                 .incorporationDate(broker.getIncorporationDate())
-                .gst(broker.getGst())
-                .pan(broker.getPan())
-                .license(broker.getLicense())
+                .gst(util.decrypt(broker.getGst()))
+                .pan(util.decrypt(broker.getPan()))
+                .license(util.decrypt(broker.getLicense()))
                 .email(broker.getEmail())
                 .phoneNumber(broker.getPhoneNumber())
                 .alternatePhoneNumber(broker.getAlternatePhoneNumber())
