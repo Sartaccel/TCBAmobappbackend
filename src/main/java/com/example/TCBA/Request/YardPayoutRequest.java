@@ -17,5 +17,7 @@ public class YardPayoutRequest {
     private String yardId;
     private LocalDateTime gateDateTime;
     private String containerSize;
+    private String paymentType;
+    private String paymentMethod;
 
 }

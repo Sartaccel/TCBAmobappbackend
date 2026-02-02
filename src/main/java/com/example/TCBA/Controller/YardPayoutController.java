@@ -23,12 +23,18 @@ public class YardPayoutController {
     ) {
 
         YardPayoutRequest payout = new YardPayoutRequest();
+
         payout.setStackHolderId(request.getStackHolderId());
         payout.setYardGstNumber(request.getYardGstNumber());
         payout.setAmount(request.getAmount());
         payout.setEntryNo(request.getEntryNo());
         payout.setContainerNo(request.getContainerNo());
         payout.setPaymentRequestId(request.getPaymentRequestId());
+        payout.setYardId(request.getYardId());
+        payout.setContainerSize(request.getContainerSize());
+        payout.setGateDateTime(request.getGateDateTime());
+        payout.setPaymentMethod(request.getPaymentMethod());
+        payout.setPaymentType(request.getPaymentType());
 
         InstantPayoutResponse payoutResponse =
                 yardPayoutService.payoutToYard(payout);
