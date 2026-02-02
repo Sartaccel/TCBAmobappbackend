@@ -57,7 +57,7 @@ public class MpinService {
             .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
 
     //Step 2: Verify OLD MPIN (this handles attempts & lock)
-    mpinAuthService.verifyMpin(user, req.getOldMpin());
+    mpinAuthService.verifyChangeMpin(user, req.getOldMpin());
 
     Mpin mpin = mpinRepo.findByBroker(user)
             .orElseThrow(() -> new AppException(ErrorCode.BAD_REQUEST));

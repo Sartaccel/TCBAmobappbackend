@@ -44,5 +44,7 @@ public enum ErrorCode {
 
     //PAYMENT
     NOT_A_INSTANT_USER,
+    REQUEST_ID_EXISTS,
+    USER_NOT_FOUND,
 }
 

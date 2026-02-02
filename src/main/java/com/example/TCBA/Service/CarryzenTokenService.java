@@ -83,13 +83,19 @@ public class CarryzenTokenService {
         log.info("Refreshing Carryzen token using refreshToken");
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(refreshToken);   // IMPORTANT: refresh token here
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        Map<String, String> body = Map.of(
+                "refreshToken", refreshToken
+        );
+
+        HttpEntity<Map<String, String>> entity =
+                new HttpEntity<>(body, headers);
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                apiConfig.getRefreshUrl(), entity, Map.class
+                apiConfig.getRefreshUrl(),
+                entity,
+                Map.class
         );
 
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {

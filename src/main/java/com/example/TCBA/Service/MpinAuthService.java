@@ -54,6 +54,15 @@ public class MpinAuthService {
         mpin.setAttempts(0);
         mpinRepo.save(mpin);
     }
-}
+
+    public void verifyChangeMpin(BrokerLogin user, String inputMpin)
+    {
+        Mpin mpin = mpinRepo.findByBroker(user)
+                .orElseThrow(() -> new AppException(ErrorCode.MPIN_NOT_SET));
+
+        if (!encoder.matches(inputMpin, mpin.getMpinHash())){
+            throw new AppException(ErrorCode.MPIN_INVALID);
+    }
+}}
 
 

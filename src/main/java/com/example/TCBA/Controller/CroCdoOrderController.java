@@ -4,6 +4,8 @@ import com.example.TCBA.Request.CroCdoOrderRequest;
 import com.example.TCBA.Request.CroOrderRequest;
 import com.example.TCBA.Request.DoRoEntriesSearchRequest;
 import com.example.TCBA.Request.GateContainerSearchRequest;
+import com.example.TCBA.Response.LinerDropdownResponse;
+import com.example.TCBA.Response.TransportDropdownResponse;
 import com.example.TCBA.Response.YardDropdownResponse;
 import com.example.TCBA.Service.CroCdoOrderService;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +28,7 @@ public class CroCdoOrderController {
         return orderService.createOrder(request);
     }
 
-    @PostMapping("/ro/add")
+    @PostMapping("/cro/add")
     public ResponseEntity<String> createRoOrder(@RequestBody List<CroOrderRequest> request) {
         return orderService.createRoOrder(request);
     }
@@ -47,11 +49,27 @@ public class CroCdoOrderController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/dropdown")
+    @GetMapping("/yard/dropdown")
     public ResponseEntity<List<YardDropdownResponse>> getYards() {
 
         List<YardDropdownResponse> yards = orderService.getYards();
 
         return ResponseEntity.ok(yards);
+    }
+
+    @GetMapping("/liner/dropdown")
+    public ResponseEntity<List<LinerDropdownResponse>> getLiner() {
+
+        List<LinerDropdownResponse> liners = orderService.getLiner();
+
+        return ResponseEntity.ok(liners);
+    }
+
+    @GetMapping("/transport/dropdown")
+    public ResponseEntity<List<TransportDropdownResponse>> getTransport() {
+
+        List<TransportDropdownResponse> transport = orderService.getTransport();
+
+        return ResponseEntity.ok(transport);
     }
 }

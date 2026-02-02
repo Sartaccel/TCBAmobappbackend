@@ -6,7 +6,7 @@ import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Repository.*;
 import com.example.TCBA.Request.InstantPayoutRequest;
 import com.example.TCBA.Response.InstantPayoutResponse;
-import com.razorpay.Payment;
+import com.example.TCBA.Util.AesEncryptionUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -32,6 +32,7 @@ public class InstantPayoutService {
     private final PaymentDetailsRepository paymentDetailsRepository;
     private final BrokerLoginRepository brokerLoginRepository;
     private final TdsTransactionRepository tdsRepository;
+    private final AesEncryptionUtil util;
 
 
     @Value("${razorpay.key.id}")
@@ -135,7 +136,7 @@ public class InstantPayoutService {
             }
 
             Beneficiary beneficiary =
-                    beneficiaryRepo.findByUpiId(req.getUpiId())
+                    beneficiaryRepo.findByUpiId(util.decrypt(req.getUpiId()))
                             .orElseGet(() -> createBeneficiary(req));
 
             BigDecimal amountInPaise =
@@ -200,7 +201,7 @@ public class InstantPayoutService {
 
         // 🔹 Create Contact
         JSONObject contact = new JSONObject();
-        contact.put("name", req.getAccountHolderName());
+        contact.put("name", util.decrypt(req.getAccountHolderName()));
         contact.put("contact", req.getPhone());
         contact.put("type", "employee");
 
@@ -221,7 +222,7 @@ public class InstantPayoutService {
             fund.put("account_type", "vpa");
 
             JSONObject vpa = new JSONObject();
-            vpa.put("address", req.getUpiId());
+            vpa.put("address", util.decrypt(req.getUpiId()));
             fund.put("vpa", vpa);
         }
 
@@ -248,7 +249,7 @@ public class InstantPayoutService {
         Beneficiary ben = new Beneficiary();
         ben.setName(req.getAccountHolderName());
         ben.setPhone(req.getPhone());
-        ben.setUpiId(req.getUpiId()); // nullable
+        ben.setUpiId(util.decrypt(req.getUpiId())); // nullable
         ben.setContactId(contactId);
         ben.setFundAccountId(fundAccountId);
 

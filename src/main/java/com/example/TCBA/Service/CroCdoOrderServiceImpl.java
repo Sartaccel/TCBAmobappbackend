@@ -3,9 +3,9 @@ package com.example.TCBA.Service;
 import com.example.TCBA.Entity.CroCdoOrder;
 import com.example.TCBA.Repository.BrokerLoginRepository;
 import com.example.TCBA.Repository.CroCdoOrderRepository;
+import com.example.TCBA.Repository.TransportRepository;
 import com.example.TCBA.Request.*;
-import com.example.TCBA.Response.YardDropdownResponse;
-import com.example.TCBA.Response.YardDropdownView;
+import com.example.TCBA.Response.*;
 import com.example.TCBA.Util.CommonUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
     private final CarryzenApiClient carryzenApiClient;
     private final CommonUtil commonUtil;
     private final BrokerLoginRepository brokerLoginRepository;
-    private final EntryNumberService entryNumberService;
+    private final TransportRepository transportRepository;
 
     @Override
     public String fetchGateContainers(GateContainerSearchRequest request) {
@@ -103,11 +103,10 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         return response;
     }
 
-
     public List<YardDropdownResponse> getYards() {
 
         List<YardDropdownView> list =
-                brokerLoginRepository.findByStackHoldersType_Id(3L);
+                brokerLoginRepository.findYardsByStackHoldersType_Id(3L);
 
         return list.stream()
                 .map(v -> new YardDropdownResponse(
@@ -117,18 +116,46 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
                 .toList();
     }
 
+
+    public List<LinerDropdownResponse> getLiner() {
+
+        List<LinerDropdownView> list =
+                brokerLoginRepository.findLinersByStackHoldersType_Id(4L);
+
+        return list.stream()
+                .map(v -> new LinerDropdownResponse(
+                        v.getStackHolderId(),
+                        v.getLegalName()
+                ))
+                .toList();
+    }
+
+    public List<TransportDropdownResponse> getTransport() {
+
+        return transportRepository
+                .findByIsActiveTrueOrderByTransportNameAsc()
+                .stream()
+                .map(t -> new TransportDropdownResponse(
+                        t.getTransportCode(),
+                        t.getTransportName()
+                ))
+                .toList();
+    }
+
+
     private CroCdoOrder mapToEntity(CroCdoOrderRequest req) {
 
         CroCdoOrder o = new CroCdoOrder();
 
         o.setEntryType("IN");
-        o.setEntryNumber(entryNumberService.generate("DO"));
+        o.setEntryNumber(req.getEntryNumber());
         o.setEntryDate(
                 LocalDateTime.ofInstant(
                         Instant.now(),
                         ZoneOffset.UTC
                 )
-        );        o.setLoginCode(req.getLoginCode());
+        );
+        o.setLoginCode(req.getLoginCode());
         o.setContainerNo(req.getContainerNo());
         o.setContainerSize(req.getContainerSize());
         o.setSealNo(req.getSealNo());
@@ -155,31 +182,24 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         api.setLoginCode(o.getLoginCode());
         api.setEntryType(o.getEntryType());
         api.setEntryNumber(o.getEntryNumber());
-
         api.setEntryDate(
                 o.getEntryDate()
                         .atZone(ZoneOffset.UTC)
                         .truncatedTo(ChronoUnit.SECONDS)
                         .toInstant()
-                        .toString()
-        );
-
+                        .toString());
         api.setContainerNo(o.getContainerNo());
         api.setContainerSize(o.getContainerSize());
         api.setSealNo(o.getSealNo());
         api.setMovementType(o.getMovementType());
-
         api.setYardCode(o.getYardCode());
         api.setChaCode(o.getChaCode());
         api.setLinerCode(o.getLinerCode());
-
         api.setChaCompanyName(o.getChaCompanyName());
         api.setLineCompanyName(o.getLineCompanyName());
         api.setYardCompanyName(o.getYardCompanyName());
-
         api.setTransportName(o.getTransportName());
         api.setTransportCode(o.getTransportCode());
-
         api.setTotalContainers(o.getTotalContainers());
         api.setCount20ft(o.getCount20ft());
         api.setCount40ft(o.getCount40ft());
@@ -192,23 +212,18 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         CroCdoOrder o = new CroCdoOrder();
 
         o.setEntryType("OUT");
-        o.setEntryNumber(entryNumberService.generate("RO"));
+        o.setEntryNumber(req.getEntryNumber());
         o.setEntryDate(LocalDateTime.now());
-
         o.setLoginCode(req.getLoginCode());
-
         o.setYardCode(req.getYardCode());
         o.setYardCompanyName(req.getYardCompanyName());
-
+        o.setMovementType("EXPORT");
         o.setChaCode(req.getChaCode());
         o.setChaCompanyName(req.getChaCompanyName());
-
         o.setLinerCode(req.getLinerCode());
         o.setLineCompanyName(req.getLineCompanyName());
-
         o.setTransportCode(req.getTransportCode());
         o.setTransportName(req.getTransportName());
-
         o.setTotalContainers(req.getNoOfContainer());
         o.setCount20ft(req.getCount20ft());
         o.setCount40ft(req.getCount40ft());
@@ -219,38 +234,27 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
     private RoApiRequest mapToRoApi(CroCdoOrder o) {
 
         RoApiRequest api = new RoApiRequest();
-
         api.setLoginCode(o.getLoginCode());
-
         api.setEntryType(o.getEntryType());
         api.setEntryNumber(o.getEntryNumber());
-
         api.setEntryDate(
                 o.getEntryDate()
                         .atZone(ZoneOffset.UTC)
                         .truncatedTo(ChronoUnit.SECONDS)
                         .toInstant()
-                        .toString()
-        );
-
+                        .toString());
         api.setYardCode(o.getYardCode());
         api.setYardCompanyName(o.getYardCompanyName());
-
         api.setChaCode(o.getChaCode());
         api.setChaCompanyName(o.getChaCompanyName());
-
         api.setLinerCode(o.getLinerCode());
         api.setLineCompanyName(o.getLineCompanyName());
-
         api.setTransportCode(o.getTransportCode());
         api.setTransportName(o.getTransportName());
-
         api.setNoOfContainer(o.getTotalContainers());
         api.setCount20ft(o.getCount20ft());
         api.setCount40ft(o.getCount40ft());
 
         return api;
     }
-
-
 }

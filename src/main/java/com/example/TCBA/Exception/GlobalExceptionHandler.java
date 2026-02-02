@@ -87,12 +87,20 @@ public class GlobalExceptionHandler {
                 messageKey = "resp.tcba.payout.notFountYard";
             }
 
+            case USER_NOT_FOUND -> {
+                status = HttpStatus.NOT_FOUND;
+                messageKey = "resp.tcba.payout.userNotFound";
+            }
+
             case NOT_A_INSTANT_USER -> {
                 status = HttpStatus.NOT_FOUND;
                 messageKey = "resp.tcba.payout.NotAInstant";
             }
 
-
+            case REQUEST_ID_EXISTS -> {
+                status = HttpStatus.ALREADY_REPORTED;
+                messageKey = "resp.tcba.payout.ReqAlreadyExist";
+            }
 
             default -> {
                 status = HttpStatus.INTERNAL_SERVER_ERROR;

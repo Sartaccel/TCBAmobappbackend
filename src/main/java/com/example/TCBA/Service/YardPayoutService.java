@@ -6,15 +6,16 @@ import com.example.TCBA.Exception.AppException;
 import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Repository.BrokerLoginRepository;
 import com.example.TCBA.Repository.PaymentDetailsRepository;
+import com.example.TCBA.Repository.PayoutTransactionRepository;
 import com.example.TCBA.Request.InstantPayoutRequest;
 import com.example.TCBA.Request.YardPayoutRequest;
 import com.example.TCBA.Response.InstantPayoutResponse;
+import com.example.TCBA.Util.AesEncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -23,12 +24,18 @@ public class YardPayoutService {
     private final BrokerLoginRepository brokerRepo;
     private final PaymentDetailsRepository paymentDetailsRepository;
     private final InstantPayoutService instantPayoutService;
+    private final PayoutTransactionRepository payoutRepo;
+    private final AesEncryptionUtil util;
 
     public InstantPayoutResponse payoutToYard(YardPayoutRequest req)
     {
 
+        if (payoutRepo.existsByPaymentRequestId(req.getPaymentRequestId())) {
+            throw new AppException(ErrorCode.REQUEST_ID_EXISTS);
+        }
+
         BrokerLogin yard =
-                brokerRepo.findByGst(req.getYardGstNumber())
+                brokerRepo.findByGst((util.encrypt(req.getYardGstNumber())))
                         .orElseThrow(() ->
                                 new AppException(ErrorCode.YARD_NOT_FOUND)
                         );
@@ -36,7 +43,7 @@ public class YardPayoutService {
         BrokerLogin CHA =
                 brokerRepo.findByStackHolderId(req.getStackHolderId())
                         .orElseThrow(() ->
-                                new RuntimeException("User Not Found")
+                                new AppException(ErrorCode.USER_NOT_FOUND)
                         );
 
         PaymentDetails paymentDetails =
@@ -87,6 +94,7 @@ public class YardPayoutService {
         response.put("tdsAmount", payoutResponse.getTdsAmount());
         response.put("withdrawAmount", payoutResponse.getWithdrawAmount());
 
+        response.put("requestId",req.getPaymentRequestId());
         response.put("containerNo", req.getContainerNo());
         response.put("entryNo", req.getEntryNo());
 
