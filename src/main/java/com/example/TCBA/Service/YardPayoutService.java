@@ -1,10 +1,12 @@
 package com.example.TCBA.Service;
 
 import com.example.TCBA.Entity.BrokerLogin;
+import com.example.TCBA.Entity.CroCdoOrder;
 import com.example.TCBA.Entity.PaymentDetails;
 import com.example.TCBA.Exception.AppException;
 import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Repository.BrokerLoginRepository;
+import com.example.TCBA.Repository.CroCdoOrderRepository;
 import com.example.TCBA.Repository.PaymentDetailsRepository;
 import com.example.TCBA.Repository.PayoutTransactionRepository;
 import com.example.TCBA.Request.InstantPayoutRequest;
@@ -24,11 +26,14 @@ public class YardPayoutService {
     private final BrokerLoginRepository brokerRepo;
     private final PaymentDetailsRepository paymentDetailsRepository;
     private final InstantPayoutService instantPayoutService;
+    private final CroCdoOrderRepository croCdoOrderRepo;
     private final PayoutTransactionRepository payoutRepo;
     private final AesEncryptionUtil util;
 
     public InstantPayoutResponse payoutToYard(YardPayoutRequest req)
     {
+
+        System.out.println(req.getGateDateTime());
 
         if (payoutRepo.existsByPaymentRequestId(req.getPaymentRequestId())) {
             throw new AppException(ErrorCode.REQUEST_ID_EXISTS);
@@ -52,6 +57,12 @@ public class YardPayoutService {
                                 new RuntimeException("Details Not Found")
                         );
 
+        CroCdoOrder croCdoOrder =
+                croCdoOrderRepo.findByEntryNumber(req.getEntryNo())
+                        .orElseThrow(() ->
+                                new AppException(ErrorCode.ENTRY_ID_NOT_FOUND));
+
+
         if (!yard.getStackHoldersType().getId().equals(3L)) {
             throw new AppException(ErrorCode.NOT_A_YARD);
         }
@@ -60,6 +71,25 @@ public class YardPayoutService {
         {
             throw new AppException(ErrorCode.NOT_A_INSTANT_USER);
         }
+
+//        if(!croCdoOrder.getEntryNumber().equals(req.getEntryNo()))
+//        {
+//            throw new AppException(ErrorCode.ENTRY_ID_NOT_FOUND);
+//        }
+
+        if(!croCdoOrder.getContainerNo().equals(req.getContainerNo()))
+        {
+            throw new AppException(ErrorCode.CONTAINER_NUMBER_NOT_FOUND);
+        }
+
+        if(!croCdoOrder.getLoginCode().equals(req.getStackHolderId()))
+        {
+            throw new AppException(ErrorCode.CHA_ID_MISMATCH);
+        }
+//
+//        if (!req.getGateDateTime().isAfter(LocalDateTime.now())) {
+//            throw new AppException(ErrorCode.GATE_IN_DATE_CANNOT_BE_FUTURE);
+//        }
 
         InstantPayoutRequest payoutReq = new InstantPayoutRequest();
 

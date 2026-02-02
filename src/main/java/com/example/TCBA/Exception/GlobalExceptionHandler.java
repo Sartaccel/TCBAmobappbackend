@@ -102,6 +102,26 @@ public class GlobalExceptionHandler {
                 messageKey = "resp.tcba.payout.ReqAlreadyExist";
             }
 
+            case ENTRY_ID_NOT_FOUND -> {
+                status = HttpStatus.NOT_FOUND;
+                messageKey = "resp.tcba.payout.EntryIdNotFound";
+            }
+
+            case CONTAINER_NUMBER_NOT_FOUND -> {
+                status = HttpStatus.NOT_FOUND;
+                messageKey = "resp.tcba.payout.ContainerNumberNotFound";
+            }
+
+            case CHA_ID_MISMATCH -> {
+                status = HttpStatus.NOT_FOUND;
+                messageKey = "resp.tcba.payout.ChaIdMismatch";
+            }
+
+            case GATE_IN_DATE_CANNOT_BE_FUTURE -> {
+                status = HttpStatus.BAD_REQUEST;
+                messageKey = "resp.tcba.payout.DateMismatch";
+            }
+
             default -> {
                 status = HttpStatus.INTERNAL_SERVER_ERROR;
                 messageKey = "resp.tcba.internal.error";
