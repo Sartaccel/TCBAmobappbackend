@@ -4,6 +4,7 @@ import com.example.TCBA.Entity.*;
 import com.example.TCBA.Exception.AppException;
 import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Repository.*;
+import com.example.TCBA.Request.CarryzenPaymentUpdateRequest;
 import com.example.TCBA.Request.InstantPayoutRequest;
 import com.example.TCBA.Response.InstantPayoutResponse;
 import com.example.TCBA.Util.AesEncryptionUtil;
@@ -20,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -30,8 +32,11 @@ public class InstantPayoutService {
     private final BeneficiaryRepository beneficiaryRepo;
     private final WalletRepository walletRepository;
     private final PaymentDetailsRepository paymentDetailsRepository;
+    private final YardInstantPayoutRequestRepository yardInstantPayoutRequestRepository;
     private final BrokerLoginRepository brokerLoginRepository;
+    private final CroCdoOrderRepository croCdoOrderRepository;
     private final TdsTransactionRepository tdsRepository;
+    private final CarryzenApiClient carryzenApiClient;
     private final AesEncryptionUtil util;
 
 
@@ -94,7 +99,7 @@ public class InstantPayoutService {
         PayoutTransaction txn = new PayoutTransaction();
         txn.setStackHolderId(req.getStackHolderId());
         txn.setAmount(withdrawAmount);
-        txn.setTds_Detected(tdsPercent);
+        txn.setTds_Detected(tdsAmount);
         txn.setTotal_Amount(req.getAmount());
         txn.setReferenceId(referenceId);
         txn.setUpiId(req.getUpiId());
@@ -168,10 +173,56 @@ public class InstantPayoutService {
             tdsTxn.setPayoutStatus(PayoutTransaction.PayoutStatus.PROCESSING);
             tdsRepository.save(tdsTxn);
 
-
             // 3️⃣ debit wallet AFTER success
             wallet.setBalance(wallet.getBalance().subtract(withdrawAmount));
             walletRepository.save(wallet);
+
+            //Update In CROCDO Table
+            CroCdoOrder o = croCdoOrderRepository
+                    .findByEntryNumber(req.getEntryNo())
+                    .orElseThrow(() -> new AppException(ErrorCode.ENTRY_ID_NOT_FOUND));
+
+            o.setPaymentStatus("PAID");
+            croCdoOrderRepository.save(o);
+
+            //Update In YardInstantPayoutRequest table
+            YardInstantPayoutRequest instantPayment =
+                    yardInstantPayoutRequestRepository
+                            .findByEntryNumber(req.getEntryNo())
+                            .orElseThrow(() -> new AppException(ErrorCode.BAD_REQUEST));
+
+            instantPayment.setPayoutStatus("PAID");
+            instantPayment.setPayoutId(razorResp.getString("id"));
+
+            
+            CarryzenPaymentUpdateRequest carryzenReq =
+                    new CarryzenPaymentUpdateRequest();
+
+            carryzenReq.setRequestId(req.getPaymentRequestId());
+
+            CarryzenPaymentUpdateRequest.ContainerPayment container =
+                    new CarryzenPaymentUpdateRequest.ContainerPayment();
+
+            container.set_id(o.getReferenceId()); // VERY IMPORTANT
+            container.setPaymentStatus("Paid");
+            container.setPaidAmount(withdrawAmount);
+            container.setTdsPercent(tdsPercent);
+            container.setTdsAmount(tdsAmount);
+
+            carryzenReq.setContainers(List.of(container));
+
+            try {
+                carryzenApiClient.updatePaymentAfterApproval(carryzenReq);
+                System.out.println("Third party status updated");
+                System.out.println(carryzenReq.getRequestId());
+                System.out.println(carryzenReq.getContainers().get(0).getPaidAmount());
+                System.out.println(carryzenReq.getContainers().get(0).getPaymentStatus());
+                System.out.println(carryzenReq.getContainers().get(0).getTdsPercent());
+                System.out.println(carryzenReq.getContainers().get(0).getTdsAmount());
+
+            } catch (Exception ex) {
+                System.out.println("Carryzen payment update failed");
+            }
 
 
             InstantPayoutResponse response = new InstantPayoutResponse();
@@ -182,7 +233,6 @@ public class InstantPayoutService {
             response.setTdsPercent(tdsPercent);
             response.setTdsAmount(tdsAmount);
             response.setWithdrawAmount(withdrawAmount);
-
             response.setStatus("PROCESSING");
 
             return response;

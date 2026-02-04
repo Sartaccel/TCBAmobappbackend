@@ -9,5 +9,11 @@ public interface CroCdoOrderRepository extends JpaRepository<CroCdoOrder, Long> 
 
     Optional<CroCdoOrder> findByEntryNumber(String entryNumber);
 
+    Optional<CroCdoOrder> findByEntryNumberAndEntryTypeAndContainerNo(
+            String entryNumber,
+            String entryType,
+            String containerNo
+    );
+
 }
 

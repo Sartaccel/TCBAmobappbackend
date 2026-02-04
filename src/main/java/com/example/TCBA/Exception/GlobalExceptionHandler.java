@@ -81,6 +81,12 @@ public class GlobalExceptionHandler {
                 messageKey = "resp.tcba.payment.required";
             }
 
+            //CROCDO
+            case ENTRY_ID_EXIST -> {
+                status = HttpStatus.BAD_REQUEST;
+                messageKey = "resp.tcba.crocdo.entryIdExist";
+            }
+
             // PAYOUT
             case YARD_NOT_FOUND, NOT_A_YARD -> {
                 status = HttpStatus.NOT_FOUND;
@@ -120,6 +126,21 @@ public class GlobalExceptionHandler {
             case GATE_IN_DATE_CANNOT_BE_FUTURE -> {
                 status = HttpStatus.BAD_REQUEST;
                 messageKey = "resp.tcba.payout.DateMismatch";
+            }
+
+            case ALREADY_PAID ->{
+                status = HttpStatus.BAD_REQUEST;
+                messageKey = "resp.tcba.payout.AlreadyPaid";
+            }
+
+            case YARD_ID_MISMATCH -> {
+                status = HttpStatus.BAD_REQUEST;
+                messageKey = "resp.tcba.payout.YardIdMismatch";
+            }
+
+            case THIRD_PARTY_UPDATE_FAILED -> {
+                status = HttpStatus.EXPECTATION_FAILED;
+                messageKey = "resp.tcba.payout.UpdateFailed";
             }
 
             default -> {

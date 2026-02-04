@@ -27,6 +27,7 @@ public class CarryzenApiConfig {
     private final String view_DoRoEntries = "https://carryzen.co.in/carryzen/tcba/tcba_getDoRoEntries";
     private final String view_gated_containers = "https://carryzen.co.in/carryzen/tcba/tcba_getGateContainersForCreditCHA";
     private final String cha_dashboard = "https://carryzen.co.in/carryzen/tcba/cha-dashboard";
+    private final String paymentApproval = "https://carryzen.co.in/carryzen/tcba/tcba_updatePaymentAfterApproval";
 
     @Bean
     public RestTemplate restTemplate() {
