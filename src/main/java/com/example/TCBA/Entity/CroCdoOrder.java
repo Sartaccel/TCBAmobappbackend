@@ -50,6 +50,12 @@ public class CroCdoOrder {
 
     private Integer totalContainers;
 
+    private String referenceId;
+
+    private String duplicateKey;
+
+    private String approvalStatus;
+
     @Column(name = "count_20ft")
     private Integer count20ft;
 
@@ -76,4 +82,7 @@ public class CroCdoOrder {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private String paymentStatus;
+
 }

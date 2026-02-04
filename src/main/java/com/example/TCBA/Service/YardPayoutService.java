@@ -3,12 +3,10 @@ package com.example.TCBA.Service;
 import com.example.TCBA.Entity.BrokerLogin;
 import com.example.TCBA.Entity.CroCdoOrder;
 import com.example.TCBA.Entity.PaymentDetails;
+import com.example.TCBA.Entity.YardInstantPayoutRequest;
 import com.example.TCBA.Exception.AppException;
 import com.example.TCBA.Exception.ErrorCode;
-import com.example.TCBA.Repository.BrokerLoginRepository;
-import com.example.TCBA.Repository.CroCdoOrderRepository;
-import com.example.TCBA.Repository.PaymentDetailsRepository;
-import com.example.TCBA.Repository.PayoutTransactionRepository;
+import com.example.TCBA.Repository.*;
 import com.example.TCBA.Request.InstantPayoutRequest;
 import com.example.TCBA.Request.YardPayoutRequest;
 import com.example.TCBA.Response.InstantPayoutResponse;
@@ -16,6 +14,7 @@ import com.example.TCBA.Util.AesEncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +27,7 @@ public class YardPayoutService {
     private final InstantPayoutService instantPayoutService;
     private final CroCdoOrderRepository croCdoOrderRepo;
     private final PayoutTransactionRepository payoutRepo;
+    private final YardInstantPayoutRequestRepository yardInstantPayoutRequestRepository;
     private final AesEncryptionUtil util;
 
     public InstantPayoutResponse payoutToYard(YardPayoutRequest req)
@@ -62,7 +62,6 @@ public class YardPayoutService {
                         .orElseThrow(() ->
                                 new AppException(ErrorCode.ENTRY_ID_NOT_FOUND));
 
-
         if (!yard.getStackHoldersType().getId().equals(3L)) {
             throw new AppException(ErrorCode.NOT_A_YARD);
         }
@@ -72,10 +71,10 @@ public class YardPayoutService {
             throw new AppException(ErrorCode.NOT_A_INSTANT_USER);
         }
 
-//        if(!croCdoOrder.getEntryNumber().equals(req.getEntryNo()))
-//        {
-//            throw new AppException(ErrorCode.ENTRY_ID_NOT_FOUND);
-//        }
+        if(!croCdoOrder.getEntryNumber().equals(req.getEntryNo()))
+        {
+            throw new AppException(ErrorCode.ENTRY_ID_NOT_FOUND);
+        }
 
         if(!croCdoOrder.getContainerNo().equals(req.getContainerNo()))
         {
@@ -86,10 +85,66 @@ public class YardPayoutService {
         {
             throw new AppException(ErrorCode.CHA_ID_MISMATCH);
         }
+
+        if (req.getGateDateTime().isAfter(LocalDateTime.now())) {
+            throw new AppException(ErrorCode.GATE_IN_DATE_CANNOT_BE_FUTURE);
+        }
+
+        if(!croCdoOrder.getPaymentStatus().equalsIgnoreCase("PENDING"))
+        {
+            throw new AppException(ErrorCode.ALREADY_PAID);
+        }
+
+        if(!croCdoOrder.getYardCode().equals(req.getYardId()))
+        {
+            throw new AppException(ErrorCode.YARD_ID_MISMATCH);
+        }
+
+//        String containerSize = req.getContainerSize(); // "20" or "40"
+//        BigDecimal inputAmount = new BigDecimal(req.getAmount());
 //
-//        if (!req.getGateDateTime().isAfter(LocalDateTime.now())) {
-//            throw new AppException(ErrorCode.GATE_IN_DATE_CANNOT_BE_FUTURE);
+//        String settingKey;
+//
+//        if ("20".equals(containerSize)) {
+//            settingKey = "20FT_AMOUNT";
+//        } else if ("40".equals(containerSize)) {
+//            settingKey = "40FT_AMOUNT";
+//        } else {
+//            throw new AppException(ErrorCode.INVALID_CONTAINER_SIZE);
 //        }
+//
+//        BigDecimal dbAmount =
+//                new BigDecimal(
+//                        adminSettingsRepository
+//                                .findBySettingsName(settingKey)
+//                                .orElseThrow(() ->
+//                                        new AppException(ErrorCode.SETTING_NOT_FOUND)
+//                                )
+//                                .getSettingsValue()
+//                );
+//
+//        if (inputAmount.compareTo(dbAmount) != 0) {
+//            throw new AppException(ErrorCode.INVALID_AMOUNT);
+//        }
+//    }
+
+        YardInstantPayoutRequest payment = YardInstantPayoutRequest.builder()
+                .chaId(req.getStackHolderId())
+                .yardId(req.getYardId())
+                .yardGstNo(util.encrypt(req.getYardGstNumber()))
+                .entryNumber(req.getEntryNo())
+                .containerNos(req.getContainerNo())
+                .paymentAmount(req.getAmount())
+                .paymentRequestId(req.getPaymentRequestId())
+                .gateInOutDatetime(req.getGateDateTime())
+                .paymentType(req.getPaymentType())
+                .paymentMethod(req.getPaymentMethod())
+                .verificationStatus("VERIFIED")
+                .payoutStatus("PENDING")
+                .requestReceivedAt(LocalDateTime.now())
+                .build();
+
+        yardInstantPayoutRequestRepository.save(payment);
 
         InstantPayoutRequest payoutReq = new InstantPayoutRequest();
 

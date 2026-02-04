@@ -1,6 +1,8 @@
 package com.example.TCBA.Service;
 
 import com.example.TCBA.Entity.CroCdoOrder;
+import com.example.TCBA.Exception.AppException;
+import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Repository.BrokerLoginRepository;
 import com.example.TCBA.Repository.CroCdoOrderRepository;
 import com.example.TCBA.Repository.TransportRepository;
@@ -11,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -18,6 +21,8 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @Service
 @Transactional
@@ -28,6 +33,7 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
     private final CommonUtil commonUtil;
     private final BrokerLoginRepository brokerLoginRepository;
     private final TransportRepository transportRepository;
+    private final CroCdoOrderRepository croCdoOrderRepository;
 
     @Override
     public String fetchGateContainers(GateContainerSearchRequest request) {
@@ -72,6 +78,38 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         // ✅ save DB after API success
         repository.saveAll(dbList);
 
+        // Get the required values from the response
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            CarryzenDoResponse carryzenResponse =
+                    mapper.readValue(response.getBody(), CarryzenDoResponse.class);
+
+            for (CarryzenDoResponse.Data d : carryzenResponse.getData()) {
+
+                Optional<CroCdoOrder> optionalOrder =
+                        repository.findByEntryNumberAndEntryTypeAndContainerNo(
+                                d.getEntryNumber(),
+                                d.getEntryType(),
+                                d.getContainerNo()
+                        );
+
+
+                if (optionalOrder.isPresent()) {
+                    CroCdoOrder order = optionalOrder.get();
+
+                    order.setReferenceId(d.getReferenceId());
+                    order.setDuplicateKey(d.getDuplicateKey());
+                    order.setApprovalStatus(d.getApprovalStatus());
+
+                    repository.save(order);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to map Carryzen response", e);
+        }
+
         return response;
     }
 
@@ -99,6 +137,33 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         }
 
         repository.saveAll(dbList);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            CarryzenDoResponse carryzenResponse =
+                    mapper.readValue(response.getBody(), CarryzenDoResponse.class);
+
+            for (CarryzenDoResponse.Data d : carryzenResponse.getData()) {
+
+                Optional<CroCdoOrder> optionalOrder =
+                        repository.findByEntryNumberAndEntryTypeAndContainerNo(
+                                d.getEntryNumber(),
+                                d.getEntryType(),
+                                d.getContainerNo()
+                        );
+
+                if (optionalOrder.isPresent()) {
+                    CroCdoOrder order = optionalOrder.get();
+
+                    order.setReferenceId(d.getReferenceId());
+                    repository.save(order);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to map Carryzen response", e);
+        }
+
 
         return response;
     }
@@ -145,6 +210,13 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
 
     private CroCdoOrder mapToEntity(CroCdoOrderRequest req) {
 
+    Optional<CroCdoOrder> optionalOrder =
+            croCdoOrderRepository.findByEntryNumber(req.getEntryNumber());
+
+        if (optionalOrder.isPresent()) {
+            throw new AppException(ErrorCode.ENTRY_ID_EXIST);
+    }
+
         CroCdoOrder o = new CroCdoOrder();
 
         o.setEntryType("IN");
@@ -171,6 +243,7 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         o.setTotalContainers(req.getTotalContainers());
         o.setCount20ft(req.getCount20ft());
         o.setCount40ft(req.getCount40ft());
+        o.setPaymentStatus("PENDING");
 
         return o;
     }
@@ -209,6 +282,13 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
 
     private CroCdoOrder mapToEntityRo(CroOrderRequest req) {
 
+        Optional<CroCdoOrder> optionalOrder =
+                croCdoOrderRepository.findByEntryNumber(req.getEntryNumber());
+
+        if (optionalOrder.isPresent()) {
+            throw new AppException(ErrorCode.ENTRY_ID_EXIST);
+        }
+
         CroCdoOrder o = new CroCdoOrder();
 
         o.setEntryType("OUT");
@@ -227,6 +307,7 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         o.setTotalContainers(req.getNoOfContainer());
         o.setCount20ft(req.getCount20ft());
         o.setCount40ft(req.getCount40ft());
+        o.setPaymentStatus("PENDING");
 
         return o;
     }

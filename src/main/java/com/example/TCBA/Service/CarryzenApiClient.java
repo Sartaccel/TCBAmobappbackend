@@ -3,10 +3,7 @@ package com.example.TCBA.Service;
 import com.example.TCBA.Config.CarryzenApiConfig;
 import com.example.TCBA.Request.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -104,4 +101,31 @@ public class CarryzenApiClient {
                 String.class
         );
     }
+
+    public void updatePaymentAfterApproval(
+            CarryzenPaymentUpdateRequest carryzenReq) {
+
+        String token = tokenService.getAccessToken();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<CarryzenPaymentUpdateRequest> entity =
+                new HttpEntity<>(carryzenReq, headers);
+
+        ResponseEntity<String> response =
+                restTemplate.exchange(
+                        apiConfig.getPaymentApproval(),
+                        HttpMethod.POST,
+                        entity,
+                        String.class
+                );
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("THIRD_PARTY_UPDATE_FAILED");
+        }
+    }
+
 }
+
