@@ -1,8 +1,12 @@
 package com.example.TCBA.Repository;
 
 import com.example.TCBA.Entity.CroCdoOrder;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CroCdoOrderRepository extends JpaRepository<CroCdoOrder, Long> {
@@ -14,6 +18,15 @@ public interface CroCdoOrderRepository extends JpaRepository<CroCdoOrder, Long> 
             String entryType,
             String containerNo
     );
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+    UPDATE CroCdoOrder c
+    SET c.approvalStatus = :status
+    WHERE c.referenceId IN :referenceIds
+""")
+    int updateApprovalStatus(String status, List<String> referenceIds);
+
 
 }
 

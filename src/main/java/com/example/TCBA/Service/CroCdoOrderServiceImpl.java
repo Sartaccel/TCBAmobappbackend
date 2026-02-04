@@ -34,10 +34,35 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
     private final BrokerLoginRepository brokerLoginRepository;
     private final TransportRepository transportRepository;
     private final CroCdoOrderRepository croCdoOrderRepository;
+    private final CarryzenApiClient apiClient;
 
     @Override
     public String fetchGateContainers(GateContainerSearchRequest request) {
         return carryzenApiClient.fetchGateContainers(request).getBody();
+    }
+
+    @Override
+    public String pendingContainers(GateContainerSearchRequest request) {
+        return carryzenApiClient.pendingContainers(request).getBody();
+    }
+
+    @Transactional
+    @Override
+    public String approveContainers(ContainerApproveRequest request) {
+
+        if ("reject".equalsIgnoreCase(request.getAction())
+                && (request.getReason() == null || request.getReason().isBlank())) {
+            throw new RuntimeException("Reason mandatory for reject");
+        }
+
+        String response = apiClient.approveContainers(request).getBody();
+
+        repository.updateApprovalStatus(
+                request.getAction().toUpperCase(),
+                request.getEntryIds()
+        );
+
+        return response;
     }
 
 
