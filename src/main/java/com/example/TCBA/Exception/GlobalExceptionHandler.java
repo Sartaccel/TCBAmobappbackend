@@ -143,6 +143,16 @@ public class GlobalExceptionHandler {
                 messageKey = "resp.tcba.payout.UpdateFailed";
             }
 
+            case INVALID_CONTAINER_SIZE -> {
+                status = HttpStatus.BAD_REQUEST;
+                messageKey = "resp.tcba.payout.InvalidContainerSize";
+            }
+
+            case INVALID_AMOUNT -> {
+                status = HttpStatus.BAD_REQUEST;
+                messageKey = "resp.tcba.payout.InvalidAmount";
+            }
+
             default -> {
                 status = HttpStatus.INTERNAL_SERVER_ERROR;
                 messageKey = "resp.tcba.internal.error";

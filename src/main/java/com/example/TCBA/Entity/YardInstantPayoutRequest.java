@@ -42,6 +42,9 @@ public class YardInstantPayoutRequest {
     @Column(name = "container_nos")
     private String containerNos;
 
+    @Column(name="container_size")
+    private String containerSize;
+
     @Column(
             name = "payment_amount",
             precision = 12,
@@ -61,6 +64,7 @@ public class YardInstantPayoutRequest {
             unique = true,
             length = 100
     )
+
     private String paymentRequestId; // Idempotency key
 
     @Column(name = "request_received_at")
@@ -78,15 +82,15 @@ public class YardInstantPayoutRequest {
     @Column(name = "payout_notes", columnDefinition = "TEXT")
     private String payoutNotes;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_on", updatable = false)
+    private LocalDateTime createdOn;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.createdOn = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 

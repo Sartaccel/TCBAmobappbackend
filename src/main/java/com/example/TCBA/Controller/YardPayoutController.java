@@ -44,7 +44,7 @@ public class YardPayoutController {
                         "SUCCESS",
                         "Payout processed successfully",
                         HttpStatus.OK,
-                        "PAYOUT_SUCCESS"
+                        ""
                 );
 
         apiResponse.setData(payoutResponse);
