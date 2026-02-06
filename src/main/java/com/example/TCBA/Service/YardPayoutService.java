@@ -62,10 +62,7 @@ public class YardPayoutService {
                         .orElseThrow(() ->
                                 new AppException(ErrorCode.ENTRY_ID_NOT_FOUND));
 
-        Wallet wallet =
-                walletRepository.findByStakeHolderId(req.getStackHolderId())
-                        .orElseThrow(() ->
-                                new AppException(ErrorCode.WALLET_NOT_FOUND));
+
 
         if (!yard.getStackHoldersType().getId().equals(3L)) {
             throw new AppException(ErrorCode.NOT_A_YARD);
@@ -103,6 +100,15 @@ public class YardPayoutService {
         if(!croCdoOrder.getYardCode().equals(req.getYardId()))
         {
             throw new AppException(ErrorCode.YARD_ID_MISMATCH);
+        }
+
+        Wallet wallet =
+                walletRepository.findByStakeHolderId(req.getStackHolderId())
+                        .orElseThrow(() ->
+                                new AppException(ErrorCode.WALLET_NOT_FOUND));
+
+        if (!wallet.getIsActive()) {
+            throw new AppException(ErrorCode.WALLET_BLOCKED);
         }
 
         if (wallet.getBalance().compareTo(req.getAmount()) < 0) {

@@ -61,7 +61,7 @@ public class MpinAuthService {
                 .orElseThrow(() -> new AppException(ErrorCode.MPIN_NOT_SET));
 
         if (!encoder.matches(inputMpin, mpin.getMpinHash())){
-            throw new AppException(ErrorCode.MPIN_INVALID);
+            throw new AppException(ErrorCode.CURRENT_MPIN_INVALID);
     }
 }}
 

@@ -37,6 +37,11 @@ public class GlobalExceptionHandler {
                 status = HttpStatus.FORBIDDEN;
                 messageKey = "resp.tcba.forbidden";
             }
+            case NOT_A_CHA ->{
+                status = HttpStatus.BAD_REQUEST;
+                messageKey = "resp.tcba.notacha";
+
+            }
 
             // MPIN
             case MPIN_INVALID -> {
@@ -57,6 +62,11 @@ public class GlobalExceptionHandler {
             case MPIN_MISMATCH -> {
                 status = HttpStatus.BAD_REQUEST;
                 messageKey = "resp.tcba.mpin.mismatch";
+            }
+            case CURRENT_MPIN_INVALID -> {
+                status = HttpStatus.BAD_REQUEST;
+                messageKey = "resp.tcba.mpin.currentMpininvalid";
+                errorCode = "CURRENT_MPIN_INVALID";
             }
 
             // OTP

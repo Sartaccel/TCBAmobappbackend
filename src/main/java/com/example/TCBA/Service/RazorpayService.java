@@ -22,7 +22,7 @@ public class RazorpayService {
     public Order createOrder(int amount) throws Exception {
 
         JSONObject options = new JSONObject();
-        options.put("amount", amount * 100); // paise
+        options.put("amount", amount); // paise
         options.put("currency", "INR");
         options.put("payment_capture", 1);   // 🔥 MUST
 
