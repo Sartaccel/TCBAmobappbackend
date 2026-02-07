@@ -260,11 +260,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
 
-            String username = jwtService.extractUsername(token);
+            String email = jwtService.extractEmail(token);
             String stackHolderId = jwtService.extractStackHolderId(token);
             String legalName = jwtService.extractLegalName(token);
 
-            if (!jwtService.isTokenValid(token, username)) {
+            if (!jwtService.isTokenValid(token, email)) {
                 sendUnauthorized(response, "Invalid access token", "INVALID_TOKEN");
                 return;
             }
@@ -272,13 +272,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 Map<String, Object> claims = new HashMap<>();
-                claims.put("email", username);
+                claims.put("email", email);
                 claims.put("stackHolderId", stackHolderId);
                 claims.put("legalName", legalName);
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                claims,
+                                email,
                                 null,
                                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
                         );

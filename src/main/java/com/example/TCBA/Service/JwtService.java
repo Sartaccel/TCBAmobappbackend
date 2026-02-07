@@ -48,9 +48,9 @@ private String secret;
     }
 
 
-    public String generateRefreshToken(String username) {
+    public String generateRefreshToken(String email) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + refreshExpiration))
                 .signWith(Keys.hmacShaKeyFor(getKey()))
@@ -83,6 +83,10 @@ private String secret;
     }
 
     public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
+    }
+
+    public String extractEmail(String token) {
         return extractAllClaims(token).getSubject();
     }
 

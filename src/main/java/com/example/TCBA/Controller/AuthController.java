@@ -49,7 +49,7 @@ public class AuthController {
             @RequestBody RefreshTokenRequest request) {
 
         try {
-            String email = jwtService.extractUsername(request.getRefreshToken());
+            String email = jwtService.extractEmail(request.getRefreshToken());
 
             if (jwtService.isTokenExpired(request.getRefreshToken())) {
                 throw new RuntimeException("Refresh token expired");

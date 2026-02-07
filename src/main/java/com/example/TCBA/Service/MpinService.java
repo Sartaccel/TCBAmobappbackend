@@ -39,6 +39,8 @@ public class MpinService {
 
     public void verifyMpin(String email, String mpinValue) {
 
+        System.out.println(email);
+
         BrokerLogin user = brokerRepo.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
 
