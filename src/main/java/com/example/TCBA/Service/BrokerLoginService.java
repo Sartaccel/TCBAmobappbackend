@@ -42,7 +42,9 @@ public class BrokerLoginService {
             throw new AppException(ErrorCode.FORBIDDEN);
         }
 
-        String accessToken = jwtService.generateAccessToken(broker.getEmail());
+        String accessToken = jwtService.generateAccessToken(broker.getEmail(),
+                broker.getStackHolderId(),
+                broker.getLegalName());
         String refreshToken = jwtService.generateRefreshToken(broker.getEmail());
 
         boolean hasMpin = mpinRepo.existsByBroker(broker);

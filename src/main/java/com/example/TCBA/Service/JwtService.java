@@ -31,14 +31,22 @@ private String secret;
         return secret.getBytes(StandardCharsets.UTF_8);
     }
 
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(
+            String email,
+            String stackHolderId,
+            String legalName
+    ) {
+
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
+                .claim("stackHolderId", stackHolderId)
+                .claim("legalName", legalName)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessExpiration))
                 .signWith(Keys.hmacShaKeyFor(getKey()))
                 .compact();
     }
+
 
     public String generateRefreshToken(String username) {
         return Jwts.builder()
@@ -82,6 +90,10 @@ private String secret;
         return extractAllClaims(token).get("yardId", String.class);
     }
 
+    public String extractLegalName(String token) {
+        return extractAllClaims(token).get("legalName", String.class);
+    }
+
     public boolean isTokenExpired(String token) {
         return extractAllClaims(token).getExpiration().before(new Date());
     }
@@ -94,6 +106,10 @@ private String secret;
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public String extractStackHolderId(String token) {
+        return extractAllClaims(token).get("stackHolderId", String.class);
     }
 
     private Claims extractAllClaims(String token) {

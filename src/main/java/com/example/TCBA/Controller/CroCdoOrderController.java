@@ -5,20 +5,24 @@ import com.example.TCBA.Response.LinerDropdownResponse;
 import com.example.TCBA.Response.TransportDropdownResponse;
 import com.example.TCBA.Response.YardDropdownResponse;
 import com.example.TCBA.Service.CroCdoOrderService;
+import com.example.TCBA.Service.JwtService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/tcba/cro-cdo")
+@RequiredArgsConstructor
 public class CroCdoOrderController {
 
+    private final JwtService jwtService;
     private final CroCdoOrderService orderService;
-
-    public CroCdoOrderController(CroCdoOrderService orderService) {
-        this.orderService = orderService;
-    }
 
     @PostMapping("/cdo/add")
     public ResponseEntity<String> createOrder(@RequestBody List<CroCdoOrderRequest> request) {
@@ -85,4 +89,20 @@ public class CroCdoOrderController {
 
         return ResponseEntity.ok(transport);
     }
+
+    @PostMapping("/orders/search")
+    public ResponseEntity<?> getOrders(@RequestBody GateContainerSearchRequest request) {
+
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        Map<String, Object> claims =
+                (Map<String, Object>) auth.getPrincipal();
+
+        String stackHolderId = claims.get("stackHolderId").toString();
+
+        return ResponseEntity.ok(orderService.getOrders(stackHolderId, request));
+    }
+
+
 }

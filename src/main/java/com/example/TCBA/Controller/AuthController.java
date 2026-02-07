@@ -1,4 +1,8 @@
 package com.example.TCBA.Controller;
+import com.example.TCBA.Entity.BrokerLogin;
+import com.example.TCBA.Exception.AppException;
+import com.example.TCBA.Exception.ErrorCode;
+import com.example.TCBA.Repository.BrokerLoginRepository;
 import com.example.TCBA.Request.*;
 import com.example.TCBA.Response.ApiResponse;
 import com.example.TCBA.Response.LoginResponse;
@@ -21,6 +25,7 @@ public class AuthController {
     private final ForgotPasswordService forgotPasswordService;
     private final CommonUtil commonUtil;
     private final JwtService jwtService;
+    private final BrokerLoginRepository brokerLoginRepository;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest request) {
@@ -50,7 +55,14 @@ public class AuthController {
                 throw new RuntimeException("Refresh token expired");
             }
 
-            String newAccessToken = jwtService.generateAccessToken(email);
+            BrokerLogin broker = brokerLoginRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
+
+            String newAccessToken = jwtService.generateAccessToken(
+                    broker.getEmail(),
+                    broker.getStackHolderId(),
+                    broker.getLegalName()
+            );
 
             ApiResponse response = new ApiResponse(
                     "SUCCESS",
