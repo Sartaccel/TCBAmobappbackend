@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,18 +35,22 @@ public interface CroCdoOrderRepository extends JpaRepository<CroCdoOrder, Long> 
     Page<CroCdoOrder> findByLoginCode(String stackHolderId, Pageable pageable);
 
     @Query("""
-    SELECT DISTINCT c.entryNumber
-    FROM CroCdoOrder c
-    WHERE c.loginCode = :stackHolderId
-    AND (:entryType IS NULL OR c.entryType = :entryType)
-    """)
-    Page<String> findDistinctEntryNumbers(
+SELECT c FROM CroCdoOrder c
+WHERE c.loginCode = :stackHolderId
+AND c.entryDate BETWEEN :startDate AND :endDate
+AND (:entryType IS NULL OR c.entryType = :entryType)
+AND (:entryNumber IS NULL OR LOWER(c.entryNumber) LIKE LOWER(CONCAT('%', :entryNumber, '%')))
+ORDER BY c.entryDate DESC
+""")
+    List<CroCdoOrder> searchOrders(
             @Param("stackHolderId") String stackHolderId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
             @Param("entryType") String entryType,
-            Pageable pageable
+            @Param("entryNumber") String entryNumber
     );
 
-    List<CroCdoOrder> findByEntryNumberIn(List<String> entryNumbers);
+
 
     List<CroCdoOrder> findByLoginCodeAndEntryNumber(
             String loginCode,

@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -358,61 +360,80 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
     }
 
     @Override
-    public Page<CroCdoGroupedResponse> getOrders(
+    public List<CroCdoGroupedResponse> searchOrders(
             String stackHolderId,
             GateContainerSearchRequest request
     ) {
+        String mode = request.getFilter() == null
+            ? "TODAY"
+            : request.getFilter().toUpperCase();
 
-        int page = request.getPage() == null || request.getPage() <= 0
-                ? 0
-                : request.getPage() - 1;
+    LocalDateTime now = LocalDateTime.now();
+    LocalDateTime start;
+    LocalDateTime end = LocalDate.now().atTime(LocalTime.MAX);
 
-        int limit = request.getLimit() == null || request.getLimit() <= 0
-                ? 10
-                : request.getLimit();
+    switch (mode) {
 
-        Pageable pageable = PageRequest.of(page, limit);
+        case "WEEK":
+            start = now.with(DayOfWeek.MONDAY)
+                    .toLocalDate()
+                    .atStartOfDay();
+            break;
 
-        // STEP 1 — Paginate DISTINCT entryNumbers
-        Page<String> entryPage = repository.findDistinctEntryNumbers(
-                stackHolderId,
-                request.getEntryType(),
-                pageable
-        );
+        case "MONTH":
+            start = now.withDayOfMonth(1)
+                    .toLocalDate()
+                    .atStartOfDay();
+            break;
 
-        if (entryPage.isEmpty()) {
-            return Page.empty(pageable);
+        default: // TODAY
+            start = LocalDate.now().atStartOfDay();
+    }
+
+        String entryType = request.getEntryType();
+        String entryNumber = request.getEntryNumber();
+
+        if (entryType != null && !entryType.isBlank()) {
+            entryType = entryType.toUpperCase();
+        } else {
+            entryType = null;
         }
 
-        // STEP 2 — Fetch all rows for these entryNumbers
+        if (entryNumber != null && entryNumber.isBlank()) {
+            entryNumber = null;
+        }
+
+
         List<CroCdoOrder> orders =
-                repository.findByEntryNumberIn(entryPage.getContent());
+            repository.searchOrders(
+                    stackHolderId,
+                    start,
+                    end,
+                    entryType,
+                    entryNumber
+            );
 
-        // STEP 3 — Group by entryNumber
-        Map<String, List<CroCdoOrder>> grouped =
-                orders.stream()
-                        .collect(Collectors.groupingBy(CroCdoOrder::getEntryNumber));
+    Map<String, List<CroCdoOrder>> grouped =
+            orders.stream()
+                    .collect(Collectors.groupingBy(CroCdoOrder::getEntryNumber));
 
-        List<CroCdoGroupedResponse> result = new ArrayList<>();
+    List<CroCdoGroupedResponse> result = new ArrayList<>();
 
-        grouped.forEach((entryNo, list) -> {
+    grouped.forEach((entryNo, list) -> {
 
-            CroCdoOrder first = list.get(0);
+        CroCdoOrder first = list.get(0);
 
-            CroCdoGroupedResponse dto = new CroCdoGroupedResponse();
-            dto.setLoginCode(first.getLoginCode());
-            dto.setEntryNumber(entryNo);
-            dto.setOrders(list);
+        CroCdoGroupedResponse dto = new CroCdoGroupedResponse();
+        dto.setLoginCode(first.getLoginCode());
+        dto.setEntryNumber(entryNo);
+        dto.setOrders(list);
 
-            result.add(dto);
-        });
+        result.add(dto);
+    });
 
-        return new PageImpl<>(
-                result,
-                pageable,
-                entryPage.getTotalElements()
-        );
+    return result;
     }
+
 
     @Override
     public List<CroCdoOrder> getOrdersByEntryNumber(

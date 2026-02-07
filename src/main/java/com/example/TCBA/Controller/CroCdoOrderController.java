@@ -91,20 +91,24 @@ public class CroCdoOrderController {
     }
 
     @PostMapping("/orders/search")
-    public ResponseEntity<?> getOrders(@RequestBody GateContainerSearchRequest request) {
+    public ResponseEntity<?> searchOrders(
+            @RequestBody GateContainerSearchRequest request
+    ) {
 
         Authentication auth =
                 SecurityContextHolder.getContext().getAuthentication();
 
+        @SuppressWarnings("unchecked")
         Map<String, Object> claims =
                 (Map<String, Object>) auth.getPrincipal();
 
         String stackHolderId = claims.get("stackHolderId").toString();
 
         return ResponseEntity.ok(
-                orderService.getOrders(stackHolderId, request)
+                orderService.searchOrders(stackHolderId, request)
         );
     }
+
 
 
     @PostMapping("/orders/by-entry")

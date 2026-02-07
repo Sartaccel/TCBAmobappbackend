@@ -31,7 +31,7 @@ public interface CroCdoOrderService {
 
     List<TransportDropdownResponse> getTransport();
 
-    Page<CroCdoGroupedResponse> getOrders(
+    List<CroCdoGroupedResponse> searchOrders(
             String stackHolderId,
             GateContainerSearchRequest request
     );
