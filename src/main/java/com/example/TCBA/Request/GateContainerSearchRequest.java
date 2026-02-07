@@ -8,6 +8,7 @@ import lombok.Data;
 public class GateContainerSearchRequest {
     private String chaCode;
     private DateFilter filters;   // optional
+    private String filter;
     private String entryNumber;
     private String entryType;
     private Integer page;
