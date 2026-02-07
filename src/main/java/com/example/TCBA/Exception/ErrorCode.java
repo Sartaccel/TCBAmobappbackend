@@ -7,6 +7,7 @@ public enum ErrorCode {
     UNAUTHORIZED,
     FORBIDDEN,
     ACCOUNT_INACTIVE,
+    NOT_A_CHA,
 
     // MPIN
     MPIN_NOT_SET,
@@ -16,6 +17,7 @@ public enum ErrorCode {
     MPIN_LOCKED,
     MPIN_MISMATCH,
     MPIN_SAME_AS_OLD,
+    CURRENT_MPIN_INVALID,
 
 
     // OTP
@@ -56,6 +58,9 @@ public enum ErrorCode {
     ALREADY_PAID,
     YARD_ID_MISMATCH,
     THIRD_PARTY_UPDATE_FAILED,
+    INVALID_CONTAINER_SIZE,
+    INVALID_AMOUNT,
+    SETTING_NOT_FOUND,
 
 }
 

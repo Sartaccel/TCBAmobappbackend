@@ -1,9 +1,6 @@
 package com.example.TCBA.Service;
 
-import com.example.TCBA.Request.CroCdoOrderRequest;
-import com.example.TCBA.Request.CroOrderRequest;
-import com.example.TCBA.Request.DoRoEntriesSearchRequest;
-import com.example.TCBA.Request.GateContainerSearchRequest;
+import com.example.TCBA.Request.*;
 import com.example.TCBA.Response.LinerDropdownResponse;
 import com.example.TCBA.Response.TransportDropdownResponse;
 import com.example.TCBA.Response.YardDropdownResponse;
@@ -16,6 +13,10 @@ public interface CroCdoOrderService {
     ResponseEntity<String> createOrder(List<CroCdoOrderRequest> requests);
 
     String fetchGateContainers(GateContainerSearchRequest request);
+
+    String approveContainers(ContainerApproveRequest request);
+
+    String pendingContainers (GateContainerSearchRequest request);
 
     String fetchDoRoEntries(DoRoEntriesSearchRequest request);
 

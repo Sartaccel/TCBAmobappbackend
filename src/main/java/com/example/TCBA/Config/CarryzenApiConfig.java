@@ -28,6 +28,8 @@ public class CarryzenApiConfig {
     private final String view_gated_containers = "https://carryzen.co.in/carryzen/tcba/tcba_getGateContainersForCreditCHA";
     private final String cha_dashboard = "https://carryzen.co.in/carryzen/tcba/cha-dashboard";
     private final String paymentApproval = "https://carryzen.co.in/carryzen/tcba/tcba_updatePaymentAfterApproval";
+    private final String pending_CHA_Approval = "https://carryzen.co.in/carryzen/tcba/tcba_getPendingCHAApprovalList";
+    private final String approve_reject_Pending_entries = "https://carryzen.co.in/carryzen/tcba/tcba_approveDoRoEntry";
 
     @Bean
     public RestTemplate restTemplate() {

@@ -1,9 +1,6 @@
 package com.example.TCBA.Controller;
 
-import com.example.TCBA.Request.CroCdoOrderRequest;
-import com.example.TCBA.Request.CroOrderRequest;
-import com.example.TCBA.Request.DoRoEntriesSearchRequest;
-import com.example.TCBA.Request.GateContainerSearchRequest;
+import com.example.TCBA.Request.*;
 import com.example.TCBA.Response.LinerDropdownResponse;
 import com.example.TCBA.Response.TransportDropdownResponse;
 import com.example.TCBA.Response.YardDropdownResponse;
@@ -38,6 +35,22 @@ public class CroCdoOrderController {
             @RequestBody GateContainerSearchRequest request) {
 
         String response = orderService.fetchGateContainers(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/pending-containers")
+    public ResponseEntity<String> pendingContainers(
+            @RequestBody GateContainerSearchRequest request) {
+
+        String response = orderService.pendingContainers(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/approve-reject")
+    public ResponseEntity<String> approveContainers(
+            @RequestBody ContainerApproveRequest request) {
+
+        String response = orderService.approveContainers(request);
         return ResponseEntity.ok(response);
     }
 

@@ -1,9 +1,6 @@
 package com.example.TCBA.Service;
 
-import com.example.TCBA.Entity.BrokerLogin;
-import com.example.TCBA.Entity.CroCdoOrder;
-import com.example.TCBA.Entity.PaymentDetails;
-import com.example.TCBA.Entity.YardInstantPayoutRequest;
+import com.example.TCBA.Entity.*;
 import com.example.TCBA.Exception.AppException;
 import com.example.TCBA.Exception.ErrorCode;
 import com.example.TCBA.Repository.*;
@@ -14,6 +11,7 @@ import com.example.TCBA.Util.AesEncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +25,9 @@ public class YardPayoutService {
     private final InstantPayoutService instantPayoutService;
     private final CroCdoOrderRepository croCdoOrderRepo;
     private final PayoutTransactionRepository payoutRepo;
+    private final WalletRepository walletRepository;
     private final YardInstantPayoutRequestRepository yardInstantPayoutRequestRepository;
+    private final AdminSettingsRepository adminSettingsRepository;
     private final AesEncryptionUtil util;
 
     public InstantPayoutResponse payoutToYard(YardPayoutRequest req)
@@ -61,6 +61,8 @@ public class YardPayoutService {
                 croCdoOrderRepo.findByEntryNumber(req.getEntryNo())
                         .orElseThrow(() ->
                                 new AppException(ErrorCode.ENTRY_ID_NOT_FOUND));
+
+
 
         if (!yard.getStackHoldersType().getId().equals(3L)) {
             throw new AppException(ErrorCode.NOT_A_YARD);
@@ -100,33 +102,51 @@ public class YardPayoutService {
             throw new AppException(ErrorCode.YARD_ID_MISMATCH);
         }
 
-//        String containerSize = req.getContainerSize(); // "20" or "40"
-//        BigDecimal inputAmount = new BigDecimal(req.getAmount());
-//
-//        String settingKey;
-//
-//        if ("20".equals(containerSize)) {
-//            settingKey = "20FT_AMOUNT";
-//        } else if ("40".equals(containerSize)) {
-//            settingKey = "40FT_AMOUNT";
-//        } else {
-//            throw new AppException(ErrorCode.INVALID_CONTAINER_SIZE);
-//        }
-//
-//        BigDecimal dbAmount =
-//                new BigDecimal(
-//                        adminSettingsRepository
-//                                .findBySettingsName(settingKey)
-//                                .orElseThrow(() ->
-//                                        new AppException(ErrorCode.SETTING_NOT_FOUND)
-//                                )
-//                                .getSettingsValue()
-//                );
-//
-//        if (inputAmount.compareTo(dbAmount) != 0) {
-//            throw new AppException(ErrorCode.INVALID_AMOUNT);
-//        }
-//    }
+        Wallet wallet =
+                walletRepository.findByStakeHolderId(req.getStackHolderId())
+                        .orElseThrow(() ->
+                                new AppException(ErrorCode.WALLET_NOT_FOUND));
+
+        if (!wallet.getIsActive()) {
+            throw new AppException(ErrorCode.WALLET_BLOCKED);
+        }
+
+        if (wallet.getBalance().compareTo(req.getAmount()) < 0) {
+            throw new AppException(ErrorCode.INSUFFICIENT_BALANCE);
+        }
+
+        try {
+
+            String containerSize = req.getContainerSize(); // "20" or "40"
+            BigDecimal inputAmount = new BigDecimal(String.valueOf(req.getAmount()));
+
+            String settingKey;
+
+            if ("20".equals(containerSize)) {
+                settingKey = "20FT_AMOUNT";
+            } else if ("40".equals(containerSize)) {
+                settingKey = "40FT_AMOUNT";
+            } else {
+                throw new AppException(ErrorCode.INVALID_CONTAINER_SIZE);
+            }
+
+            BigDecimal dbAmount =
+                    new BigDecimal(
+                            adminSettingsRepository
+                                    .findBySettingsName(settingKey)
+                                    .orElseThrow(() ->
+                                            new AppException(ErrorCode.INTERNAL_ERROR)
+                                    )
+                                    .getSettingsValue()
+                    );
+
+            if (inputAmount.compareTo(dbAmount) != 0) {
+                throw new AppException(ErrorCode.INVALID_AMOUNT);
+            }
+
+        }  catch (AppException e) {
+            throw e;
+        }
 
         YardInstantPayoutRequest payment = YardInstantPayoutRequest.builder()
                 .chaId(req.getStackHolderId())
@@ -139,6 +159,7 @@ public class YardPayoutService {
                 .gateInOutDatetime(req.getGateDateTime())
                 .paymentType(req.getPaymentType())
                 .paymentMethod(req.getPaymentMethod())
+                .containerSize(req.getContainerSize())
                 .verificationStatus("VERIFIED")
                 .payoutStatus("PENDING")
                 .requestReceivedAt(LocalDateTime.now())
@@ -186,6 +207,5 @@ public class YardPayoutService {
         return payoutResponse;
 
     }
-
 }
 

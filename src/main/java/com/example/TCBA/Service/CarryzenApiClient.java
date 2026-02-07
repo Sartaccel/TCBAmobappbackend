@@ -16,8 +16,7 @@ public class CarryzenApiClient {
     private final RestTemplate restTemplate;
     private final CarryzenApiConfig apiConfig;
 
-    public ResponseEntity<String> sendDoEntry(
-            List<DoApiRequest> request) {
+    private HttpHeaders createHeaders() {
 
         String token = tokenService.getAccessToken();
 
@@ -25,9 +24,16 @@ public class CarryzenApiClient {
         headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
+        return headers;
+    }
+
+
+    public ResponseEntity<String> sendDoEntry(
+            List<DoApiRequest> request) {
+
         return restTemplate.postForEntity(
                 apiConfig.getIn_out_Url(),
-                new HttpEntity<>(request, headers),
+                new HttpEntity<>(request, createHeaders()),
                 String.class
         );
     }
@@ -35,69 +41,54 @@ public class CarryzenApiClient {
     public ResponseEntity<String> sendRoEntry(
             List<RoApiRequest> request) {
 
-        String token = tokenService.getAccessToken();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
         return restTemplate.postForEntity(
                 apiConfig.getRo_entry_url(),
-                new HttpEntity<>(request, headers),
+                new HttpEntity<>(request, createHeaders()),
                 String.class
         );
     }
 
     public ResponseEntity<String> fetchGateContainers(GateContainerSearchRequest request) {
 
-        String token = tokenService.getAccessToken();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        // If filters is null, it will not be sent in JSON
-        HttpEntity<GateContainerSearchRequest> entity =
-                new HttpEntity<>(request, headers);
-
         return restTemplate.postForEntity(
                 apiConfig.getView_gated_containers(),
-                entity,
+                new HttpEntity<>(request, createHeaders()),
+                String.class
+        );
+    }
+
+    public ResponseEntity<String> approveContainers(ContainerApproveRequest request) {
+
+        return restTemplate.postForEntity(
+                apiConfig.getApprove_reject_Pending_entries(),
+                new HttpEntity<>(request, createHeaders()),
+                String.class
+        );
+    }
+
+    public ResponseEntity<String> pendingContainers(GateContainerSearchRequest request) {
+
+        return restTemplate.postForEntity(
+                apiConfig.getPending_CHA_Approval(),
+                new HttpEntity<>(request, createHeaders()),
                 String.class
         );
     }
 
     public ResponseEntity<String> fetchDoRoEntries(DoRoEntriesSearchRequest request) {
 
-        String token = tokenService.getAccessToken();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        // If filters is null, it will not be sent in JSON
-        HttpEntity<DoRoEntriesSearchRequest> entity =
-                new HttpEntity<>(request, headers);
-
         return restTemplate.postForEntity(
                 apiConfig.getView_DoRoEntries(),
-                entity,
+                new HttpEntity<>(request, createHeaders()),
                 String.class
         );
     }
     public ResponseEntity<String> fetchChaDashboard(ChaDashboardRequest request) {
 
-        String token = tokenService.getAccessToken();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<ChaDashboardRequest> entity = new HttpEntity<>(request, headers);
-
         return restTemplate.postForEntity(
                 apiConfig.getCha_dashboard(),
-                entity,
+                new HttpEntity<>(request, createHeaders()),
+
                 String.class
         );
     }
@@ -105,14 +96,8 @@ public class CarryzenApiClient {
     public void updatePaymentAfterApproval(
             CarryzenPaymentUpdateRequest carryzenReq) {
 
-        String token = tokenService.getAccessToken();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
         HttpEntity<CarryzenPaymentUpdateRequest> entity =
-                new HttpEntity<>(carryzenReq, headers);
+                new HttpEntity<>(carryzenReq, createHeaders());
 
         ResponseEntity<String> response =
                 restTemplate.exchange(
@@ -121,6 +106,7 @@ public class CarryzenApiClient {
                         entity,
                         String.class
                 );
+
 
         if (!response.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("THIRD_PARTY_UPDATE_FAILED");
