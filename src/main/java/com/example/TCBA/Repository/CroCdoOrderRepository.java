@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,10 +32,24 @@ public interface CroCdoOrderRepository extends JpaRepository<CroCdoOrder, Long> 
 
     Page<CroCdoOrder> findByLoginCode(String stackHolderId, Pageable pageable);
 
-    Page<CroCdoOrder> findByLoginCodeAndEntryType(
-            String stackHolderId,
-            String entryType,
+    @Query("""
+    SELECT DISTINCT c.entryNumber
+    FROM CroCdoOrder c
+    WHERE c.loginCode = :stackHolderId
+    AND (:entryType IS NULL OR c.entryType = :entryType)
+    """)
+    Page<String> findDistinctEntryNumbers(
+            @Param("stackHolderId") String stackHolderId,
+            @Param("entryType") String entryType,
             Pageable pageable
     );
+
+    List<CroCdoOrder> findByEntryNumberIn(List<String> entryNumbers);
+
+    List<CroCdoOrder> findByLoginCodeAndEntryNumber(
+            String loginCode,
+            String entryNumber
+    );
+
 }
 

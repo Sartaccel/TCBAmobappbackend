@@ -11,6 +11,7 @@ import com.example.TCBA.Response.*;
 import com.example.TCBA.Util.CommonUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,9 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -367,9 +370,8 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         return api;
     }
 
-
     @Override
-    public Page<CroCdoOrder> getOrders(
+    public Page<CroCdoGroupedResponse> getOrders(
             String stackHolderId,
             GateContainerSearchRequest request
     ) {
@@ -384,17 +386,59 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
 
         Pageable pageable = PageRequest.of(page, limit);
 
-        if (request.getEntryType() != null && !request.getEntryType().toUpperCase().isBlank()) {
+        // STEP 1 — Paginate DISTINCT entryNumbers
+        Page<String> entryPage = repository.findDistinctEntryNumbers(
+                stackHolderId,
+                request.getEntryType(),
+                pageable
+        );
 
-            return repository.findByLoginCodeAndEntryType(
-                    stackHolderId,
-                    request.getEntryType(),
-                    pageable
-            );
+        if (entryPage.isEmpty()) {
+            return Page.empty(pageable);
         }
 
-        return repository.findByLoginCode(stackHolderId, pageable);
+        // STEP 2 — Fetch all rows for these entryNumbers
+        List<CroCdoOrder> orders =
+                repository.findByEntryNumberIn(entryPage.getContent());
+
+        // STEP 3 — Group by entryNumber
+        Map<String, List<CroCdoOrder>> grouped =
+                orders.stream()
+                        .collect(Collectors.groupingBy(CroCdoOrder::getEntryNumber));
+
+        List<CroCdoGroupedResponse> result = new ArrayList<>();
+
+        grouped.forEach((entryNo, list) -> {
+
+            CroCdoOrder first = list.get(0);
+
+            CroCdoGroupedResponse dto = new CroCdoGroupedResponse();
+            dto.setLoginCode(first.getLoginCode());
+            dto.setEntryNumber(entryNo);
+            dto.setOrders(list);
+
+            result.add(dto);
+        });
+
+        return new PageImpl<>(
+                result,
+                pageable,
+                entryPage.getTotalElements()
+        );
     }
+
+    @Override
+    public List<CroCdoOrder> getOrdersByEntryNumber(
+            String stackHolderId,
+            String entryNumber
+    ) {
+
+        return repository.findByLoginCodeAndEntryNumber(
+                stackHolderId,
+                entryNumber
+        );
+    }
+
 
 
 }
