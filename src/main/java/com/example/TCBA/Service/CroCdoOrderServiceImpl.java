@@ -15,10 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -247,10 +243,7 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         o.setEntryType("IN");
         o.setEntryNumber(req.getEntryNumber());
         o.setEntryDate(
-                LocalDateTime.ofInstant(
-                        Instant.now(),
-                        ZoneOffset.UTC
-                )
+                req.getEntryDate()
         );
         o.setLoginCode(req.getLoginCode());
         o.setContainerNo(req.getContainerNo());
@@ -282,9 +275,6 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         api.setEntryNumber(o.getEntryNumber());
         api.setEntryDate(
                 o.getEntryDate()
-                        .atZone(ZoneOffset.UTC)
-                        .truncatedTo(ChronoUnit.SECONDS)
-                        .toInstant()
                         .toString());
         api.setContainerNo(o.getContainerNo());
         api.setContainerSize(o.getContainerSize());
@@ -318,7 +308,7 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
 
         o.setEntryType("OUT");
         o.setEntryNumber(req.getEntryNumber());
-        o.setEntryDate(LocalDateTime.now());
+        o.setEntryDate(req.getEntryDate());
         o.setLoginCode(req.getLoginCode());
         o.setYardCode(req.getYardCode());
         o.setYardCompanyName(req.getYardCompanyName());
@@ -345,9 +335,6 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
         api.setEntryNumber(o.getEntryNumber());
         api.setEntryDate(
                 o.getEntryDate()
-                        .atZone(ZoneOffset.UTC)
-                        .truncatedTo(ChronoUnit.SECONDS)
-                        .toInstant()
                         .toString());
         api.setYardCode(o.getYardCode());
         api.setYardCompanyName(o.getYardCompanyName());
