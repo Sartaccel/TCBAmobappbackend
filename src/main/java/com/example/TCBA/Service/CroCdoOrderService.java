@@ -2,6 +2,7 @@ package com.example.TCBA.Service;
 
 import com.example.TCBA.Entity.CroCdoOrder;
 import com.example.TCBA.Request.*;
+import com.example.TCBA.Response.CroCdoGroupedResponse;
 import com.example.TCBA.Response.LinerDropdownResponse;
 import com.example.TCBA.Response.TransportDropdownResponse;
 import com.example.TCBA.Response.YardDropdownResponse;
@@ -30,5 +31,13 @@ public interface CroCdoOrderService {
 
     List<TransportDropdownResponse> getTransport();
 
-    Page<CroCdoOrder> getOrders(String stackHolderId, GateContainerSearchRequest request);
+    Page<CroCdoGroupedResponse> getOrders(
+            String stackHolderId,
+            GateContainerSearchRequest request
+    );
+
+    List<CroCdoOrder> getOrdersByEntryNumber(
+            String stackHolderId,
+            String entryNumber
+    );
 }
