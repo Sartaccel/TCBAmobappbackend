@@ -10,6 +10,9 @@ import com.example.TCBA.Request.*;
 import com.example.TCBA.Response.*;
 import com.example.TCBA.Util.CommonUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -363,4 +366,35 @@ public class CroCdoOrderServiceImpl implements CroCdoOrderService {
 
         return api;
     }
+
+
+    @Override
+    public Page<CroCdoOrder> getOrders(
+            String stackHolderId,
+            GateContainerSearchRequest request
+    ) {
+
+        int page = request.getPage() == null || request.getPage() <= 0
+                ? 0
+                : request.getPage() - 1;
+
+        int limit = request.getLimit() == null || request.getLimit() <= 0
+                ? 10
+                : request.getLimit();
+
+        Pageable pageable = PageRequest.of(page, limit);
+
+        if (request.getEntryType() != null && !request.getEntryType().toUpperCase().isBlank()) {
+
+            return repository.findByLoginCodeAndEntryType(
+                    stackHolderId,
+                    request.getEntryType(),
+                    pageable
+            );
+        }
+
+        return repository.findByLoginCode(stackHolderId, pageable);
+    }
+
+
 }

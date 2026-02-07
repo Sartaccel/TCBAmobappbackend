@@ -161,7 +161,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 //
 //@Component
 //@RequiredArgsConstructor
@@ -259,6 +261,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
 
             String username = jwtService.extractUsername(token);
+            String stackHolderId = jwtService.extractStackHolderId(token);
+            String legalName = jwtService.extractLegalName(token);
 
             if (!jwtService.isTokenValid(token, username)) {
                 sendUnauthorized(response, "Invalid access token", "INVALID_TOKEN");
@@ -267,9 +271,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
+                Map<String, Object> claims = new HashMap<>();
+                claims.put("email", username);
+                claims.put("stackHolderId", stackHolderId);
+                claims.put("legalName", legalName);
+
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                username,
+                                claims,
                                 null,
                                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
                         );

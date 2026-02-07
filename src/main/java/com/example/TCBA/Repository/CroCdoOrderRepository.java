@@ -2,6 +2,8 @@ package com.example.TCBA.Repository;
 
 import com.example.TCBA.Entity.CroCdoOrder;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,6 +29,12 @@ public interface CroCdoOrderRepository extends JpaRepository<CroCdoOrder, Long> 
 """)
     int updateApprovalStatus(String status, List<String> referenceIds);
 
+    Page<CroCdoOrder> findByLoginCode(String stackHolderId, Pageable pageable);
 
+    Page<CroCdoOrder> findByLoginCodeAndEntryType(
+            String stackHolderId,
+            String entryType,
+            Pageable pageable
+    );
 }
 
